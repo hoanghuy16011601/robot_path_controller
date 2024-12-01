@@ -114,6 +114,7 @@ catkin_install_python(PROGRAMS
   scripts/odometry_broadcaster.py 
   scripts/STM32_Controller.py 
   scripts/Path_Planning.py 
+  scripts/test_uart.py 
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
