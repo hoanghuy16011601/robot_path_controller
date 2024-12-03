@@ -5,7 +5,7 @@ import threading
 import time
 from std_msgs.msg import String 
 
-port_name = "/dev/ttyUSB1"  # Replace with your port
+port_name = "/dev/ttyUSB2"  # Replace with your port
 baud_rate = 57600
 rospy.init_node('STM32_Controller',anonymous = True)
 STM32_Message_Publisher = rospy.Publisher("STM32_Message",String,queue_size=50)
@@ -47,7 +47,7 @@ def Ros_Subcribe():
     rospy.Subscriber("Commander",Command, Command_Handler)
     rospy.spin()
 
-Ros_Subcribe()
+
 
 try:# Open the serial port
     ser = serial.Serial(port_name, baud_rate, timeout=1)
