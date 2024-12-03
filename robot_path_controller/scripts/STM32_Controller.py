@@ -18,6 +18,7 @@ def on_data_received(data):
 
 def serial_listener(serial_port:serial.Serial, callback):
     """Thread function to listen for data on the serial port."""
+    print("Start")
     while True:
         if serial_port.in_waiting > 0:
             # Read the data from the serial port
@@ -50,6 +51,7 @@ def Ros_Subcribe():
 
 
 try:# Open the serial port
+    print("Okay")
     ser = serial.Serial(port_name, baud_rate, timeout=1)
     print(f"Connected to {port_name}")
     
