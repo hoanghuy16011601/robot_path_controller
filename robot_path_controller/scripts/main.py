@@ -19,9 +19,9 @@ class Dijkstra():
 
     def Reset_Path_Planning(self):
         for Grid in self.Grid_Planning_Information:
-            Grid["Status"] = "Finding" 
-            Grid["Point"]  = 10000000
-            Grid["From"]   = ()
+            self.Grid_Planning_Information[Grid]["Status"] = "Finding" 
+            self.Grid_Planning_Information[Grid]["Point"]  = 10000000
+            self.Grid_Planning_Information[Grid]["From"]   = ()
     
     def __Find_Lowest_Penalty_Of_Grid_Is_Not_Found(self,Target_Grid:tuple):
         Min_Penalty = 1000000
