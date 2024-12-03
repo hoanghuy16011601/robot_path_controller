@@ -42,7 +42,7 @@ def Command_Handler(Command):
     else:
         pass
     print(Data)
-    # ser.write(Data.encode("utf-8"))
+    ser.write(Data.encode("utf-8"))
 
 def Ros_Subcribe():
     rospy.Subscriber("Commander",Command, Command_Handler)
