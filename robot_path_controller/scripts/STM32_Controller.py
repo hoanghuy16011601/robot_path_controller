@@ -5,7 +5,7 @@ import threading
 import time
 from std_msgs.msg import String 
 
-port_name = "/dev/ttyUSB0"  # Replace with your port
+port_name = "/dev/ttyUSB1"  # Replace with your port
 baud_rate = 57600
 rospy.init_node('STM32_Controller',anonymous = True)
 STM32_Message_Publisher = rospy.Publisher("STM32_Message",String,queue_size=50)
@@ -33,7 +33,7 @@ def Command_Handler(Command):
     Command_Type = Command.type
     Command_Value = Command.value
     if (Command_Type == "Foward" or Command_Type == "Backward"):
-        Data = f"{Command_Type}\0"
+        Data = f"{Command_Type}"
     elif (Command_Type == "Rotate-Right" or Command_Type == "Rotate-Left"):
         Data = f"{Command_Type}/{Command_Value}\0"
     else:
