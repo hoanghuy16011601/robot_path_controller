@@ -24,8 +24,8 @@ def serial_listener(serial_port:serial.Serial, callback):
             # Read the data from the serial port
             data = serial_port.readline().decode("utf-8").strip()
             # Call the callback function with the received data
-            if data == "Start":
-                serial_port.write("Okay\0")
+            # if data == "Start":
+            #     serial_port.write("Okay\0")
             callback(data)
 
 def Command_Handler(Command):
