@@ -280,7 +280,9 @@ class Controller():
     def Determine_New_Position_For_Robot(self):
         Positon_Now = self.Robot_Position.Get_Position_At_Now()
         Penalty_Map_Now = self.Penalty_Map.Get_Penalty_Map()
+        self.Path_Planning.Reset_Path_Planning()
         Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
+        print(Target_Pose)
         Path = self.Path_Planning.Find_Path(Start_Grid=Positon_Now,End_Grid=Target_Pose,Penalty_Map=Penalty_Map_Now)
         return Path[0]
     
