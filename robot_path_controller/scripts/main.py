@@ -312,7 +312,7 @@ class Controller():
                 Target_Angle = 270
         
         if Target_Angle == Now_Angle:           # In same direction so can move
-            Command["Type"] = "Go-Forward"
+            Command["Type"] = "Forward"
             Command["Value"] = 0.4
         else:                                   # Not same direction so must be rotate first
             if (Target_Angle - Now_Angle) > -180 or (Target_Angle - Now_Angle) < 180:
