@@ -1,4 +1,4 @@
-from flood_fill.msg import Command
+from robot_path_controller.msg import Command
 import rospy
 import serial
 import threading
