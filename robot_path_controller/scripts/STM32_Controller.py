@@ -32,18 +32,22 @@ def Command_Handler(Command):
     Data = ""
     Command_Type = Command.type
     Command_Value = Command.value
+    print(Command_Type)
+    print(Command_Value)
     if (Command_Type == "Foward" or Command_Type == "Backward"):
-        Data = f"{Command_Type}"
+        Data = f"{Command_Type}\0"
     elif (Command_Type == "Rotate-Right" or Command_Type == "Rotate-Left"):
         Data = f"{Command_Type}/{Command_Value}\0"
     else:
         pass
-    ser.write(Data)
+    print(Data)
+    # ser.write(Data.encode("utf-8"))
 
 def Ros_Subcribe():
     rospy.Subscriber("Commander",Command, Command_Handler)
     rospy.spin()
 
+Ros_Subcribe()
 
 try:# Open the serial port
     ser = serial.Serial(port_name, baud_rate, timeout=1)

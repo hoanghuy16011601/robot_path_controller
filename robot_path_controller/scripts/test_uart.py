@@ -15,7 +15,7 @@ def serial_listener(serial_port, callback):
             callback(data)
 
 # Serial port configuration
-port_name = "/dev/ttyUSB0"  # Replace with your port
+port_name = "/dev/ttyUSB2"  # Replace with your port
 baud_rate = 57600
 
 try:
