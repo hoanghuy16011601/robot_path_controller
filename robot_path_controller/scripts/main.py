@@ -257,7 +257,7 @@ class Controller():
         ## Finding the pose have smallest penalty point
         for X_Check in range(0,Length_Axis):
             for Y_Check in range(0,Length_Axis):
-                if (X_Check != X_Now) and (Y_Check != Y_Now):
+                if (X_Check != X_Now) or (Y_Check != Y_Now):
                     if Penalty_Map_For_Possible_Pose[X_Check][Y_Check] < Penalty_Point_Of_New_Pose:
                         New_Pose = (X_Check,Y_Check)
                         Penalty_Point_Of_New_Pose = Penalty_Map_For_Possible_Pose[X_Check][Y_Check]
