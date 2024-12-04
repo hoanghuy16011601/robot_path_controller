@@ -253,7 +253,7 @@ class Controller():
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += 20
                 else:
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += Penalty_Point
-    
+        print(Penalty_Map_For_Possible_Pose)
         ## Finding the pose have smallest penalty point
         for X_Check in range(0,Length_Axis):
             for Y_Check in range(0,Length_Axis):
