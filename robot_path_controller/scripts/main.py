@@ -350,6 +350,7 @@ def Map_Callback_Handler(data):
     Flag_Map = True
     Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
     Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=Algorithm_Controller.Robot_Position.Get_Passed_Positions())
+    print(Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
 
 def Position_Callback_Handler(msg):
     global Flag_Position
