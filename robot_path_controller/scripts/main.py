@@ -265,7 +265,7 @@ class Controller():
                         if (abs(X_Now - X_Check) < abs(X_Now - New_Pose[0])):
                             New_Pose = (X_Check,Y_Check)
                         elif (abs(X_Now - X_Check) == abs(X_Now - New_Pose[0])):
-                            if (abs(Y_Now - Y_Check) < abs(Y_Now - New_Pose[1])):
+                            if (abs(Y_Now - Y_Check) > abs(Y_Now - New_Pose[1])):
                                 New_Pose = (X_Check,Y_Check)
                             else:
                                 pass
@@ -314,7 +314,7 @@ class Controller():
                 Target_Angle = 270
         
         if Target_Angle == Now_Angle:           # In same direction so can move
-            Command["Type"] = "Forward"
+            Command["Type"] = "Foward"
             Command["Value"] = 0.4
         else:                                   # Not same direction so must be rotate first
             if (Target_Angle - Now_Angle) > -180 or (Target_Angle - Now_Angle) < 180:
