@@ -422,7 +422,7 @@ class Main():
         else:
             pass # Error. Reserve 
         
-        if len(self.List_Command == 0):
+        if len(self.List_Command) ==0:
             self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()
         else: 
             pass
