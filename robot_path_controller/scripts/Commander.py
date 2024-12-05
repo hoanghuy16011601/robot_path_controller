@@ -373,12 +373,12 @@ class Controller():
         else:
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 15
+                "Value" : 10
             })
             List_Commands.append(Command)
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 15
+                "Value" : 10
             })
         return List_Commands
     
@@ -433,7 +433,7 @@ class Main():
                 pass                                                ## Waiting for setup finish
         elif Message.data == "Movement_Okay":
             Last_Command = self.List_Command[0]
-            if Last_Command["Value"] == 15:
+            if Last_Command["Value"] == 10:
                 if len(self.List_Command) == 1:
                     self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
                 else:
