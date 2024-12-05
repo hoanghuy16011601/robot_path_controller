@@ -384,7 +384,7 @@ def Position_Callback_Handler(msg):
 def STM32_Message_Callback_Handler(Message):
     print("Receive data from topic STM32_Message")
     if Message.data == "Start":
-        while (Flag_Map == False) or (Flag_Position == False):
+        while (Flag_Map == False):
             pass                                                ## Waiting for setup finish
     elif Message.data == "Movement_Okay":
         Algorithm_Controller.Robot_Position.up
