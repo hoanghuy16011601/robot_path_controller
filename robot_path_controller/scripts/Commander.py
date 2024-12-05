@@ -346,20 +346,26 @@ class Controller():
             Command["Type"] = "Backward"
             Command["Value"] = 40
         else:                                   # Not same direction so must be rotate first
-            if (Target_Angle - Now_Angle) > 0:
-                if (Target_Angle - Now_Angle) == 90: 
-                    Command["Type"] = "Rotate-Right"
-                    Command["Value"] = 90
-                else:
-                    Command["Type"] = "Rotate-Left"
-                    Command["Value"] = 90
+            if Target_Angle == 0:
+                Target_Angle = 360
             else:
-                if (Now_Angle - Target_Angle) == 90:
+                pass
+
+            if (Target_Angle - Now_Angle) > 0:
+                if (Target_Angle - Now_Angle) > 180:
                     Command["Type"] = "Rotate-Left"
-                    Command["Value"] = 90
+                    Command["Value"] = 360-(Target_Angle - Now_Angle)
+                else:
+                    Command["Type"] = "Rotate-Right"
+                    Command["Value"] = Target_Angle - Now_Angle
+
+            else:
+                if (Target_Angle - Now_Angle) < -180:
+                    Command["Type"] = "Rotate-Right"
+                    Command["Value"] = 360 + (Target_Angle - Now_Angle)
                 else:
                     Command["Type"] = "Rotate-Left"
-                    Command["Value"] = 90
+                    Command["Value"] = -(Target_Angle - Now_Angle)
         
 
         if Command["Type"] == "Forward" or Command["Type"] == "Backward":
