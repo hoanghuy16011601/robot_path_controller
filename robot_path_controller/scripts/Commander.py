@@ -67,9 +67,9 @@ class Dijkstra():
         Path_Planning = []
         if self.Grid_Planning_Information[Found_Grid]["Status"] == "Found":
             From_Grid = Found_Grid 
-            while self.__Get_Status_Of_Grid(From_Grid) != "Start":
-                Path_Planning.append(From_Grid)
-                From_Grid = self.__Get_From_Of_Grid(Grid = From_Grid)
+            # while self.__Get_Status_Of_Grid(From_Grid) != "Start":
+            Path_Planning.append(From_Grid)
+            From_Grid = self.__Get_From_Of_Grid(Grid = From_Grid)
         else:
             print("Cannot find path of not found grid")
         Path_Planning = Path_Planning[::-1]
@@ -79,7 +79,7 @@ class Dijkstra():
     
     def Find_Path(self,Start_Grid:tuple,End_Grid:tuple,Penalty_Map:dict):
         self.__Reset_Path_Planning()
-        self.__Update_Status_Of_Grid_Planning(Grid=Start_Grid,Status="Start")
+        self.__Update_Status_Of_Grid_Planning(Grid=Start_Grid,Status="Found")
         self.__Update_Point_Of_Grid_Planning(Grid=Start_Grid,Point=0)
         Grid_State_End = Start_Grid
         while(Grid_State_End != End_Grid):
