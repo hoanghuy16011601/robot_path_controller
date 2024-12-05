@@ -157,8 +157,8 @@ class Penalty_Map():
 
 class Position():
     def __init__(self) -> None:
-        self.Passed_Positions = []
-        self.Now_Position = ()
+        self.Passed_Positions = [(12,12)]
+        self.Now_Position = (12,12)
         self.Last_Position = ()
         self.Target_Position = ()
         self.Count_Check = 0
@@ -203,8 +203,11 @@ class Position():
         else:
             pass
     
-    def Get_Position_At_Now(self):
+    def Get_Now_Position(self):
         return self.Now_Position
+    
+    def Update_Now_Position(self,Position):
+        self.Now_Position = Position
     
     def Get_Target_Position(self):
         return self.Target_Position
@@ -212,7 +215,7 @@ class Position():
     def Update_Target_Position(self,Position):
         self.Target_Position = Position
     
-    def Get_Angle_At_Now(self):
+    def Get_Now_Angle(self):
         return self.Now_Angle
     
     def Update_Now_Angle(self,Angle:int):
@@ -226,6 +229,12 @@ class Position():
 
     def Get_Passed_Positions(self):
         return self.Passed_Positions
+    
+    def Update_Passed_Position(self,Position):
+        if Position not in self.Passed_Positions:
+            self.Passed_Positions.append(Position)
+        else:
+            pass
 
 
 class Controller():
@@ -239,7 +248,7 @@ class Controller():
     def __Determine_Possible_NewPosition_To_Move(self):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-        Position = self.Robot_Position.Get_Position_At_Now()
+        Position = self.Robot_Position.Get_Now_Position()
         X_Now = Position[0]
         Y_Now = Position[1]
         New_Pose = ()
@@ -278,7 +287,7 @@ class Controller():
         return New_Pose
     
     def Determine_New_Position_For_Robot(self):
-        Positon_Now = self.Robot_Position.Get_Position_At_Now()
+        Positon_Now = self.Robot_Position.Get_Now_Position()
         Penalty_Map_Now = self.Penalty_Map.Get_Penalty_Map()
         Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
         print(f"Now Position is {Positon_Now}")
@@ -295,8 +304,8 @@ class Controller():
 
     # 0 <= Angle <= 360
 
-        Now_Position = self.Robot_Position.Get_Position_At_Now()
-        Now_Angle = self.Robot_Position.Get_Angle_At_Now()
+        Now_Position = self.Robot_Position.Get_Now_Position()
+        Now_Angle = self.Robot_Position.Get_Now_Angle()
         Command = {
             "Type"  : "",
             "Value" : 0
@@ -320,12 +329,20 @@ class Controller():
             Command["Type"] = "Backward"
             Command["Value"] = 0.4
         else:                                   # Not same direction so must be rotate first
-            if (Target_Angle - Now_Angle) < 0:
-                Command["Type"] = "Rotate-Right"
-                Command["Value"] = Target_Angle - Now_Angle
+            if (Target_Angle - Now_Angle) > 0:
+                if (Target_Angle - Now_Angle) == 90: 
+                    Command["Type"] = "Rotate-Right"
+                    Command["Value"] = 90
+                else:
+                    Command["Type"] = "Rotate-Left"
+                    Command["Value"] = 90
             else:
-                Command["Type"] = "Rotate-Left"
-                Command["Value"] = abs(Target_Angle - Now_Angle)
+                if (Now_Angle - Target_Angle) == 90:
+                    Command["Type"] = "Rotate-Left"
+                    Command["Value"] = 90
+                else:
+                    Command["Type"] = "Rotate-Left"
+                    Command["Value"] = 90
         return Command,Target_Angle
     
     def Command_Robot(self):
@@ -370,7 +387,7 @@ def STM32_Message_Callback_Handler(Message):
         while (Flag_Map == False) or (Flag_Position == False):
             pass                                                ## Waiting for setup finish
     elif Message.data == "Movement_Okay":
-        pass
+        Algorithm_Controller.Robot_Position.up
     elif Message.data == "Rotation_Okay":
         Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=Algorithm_Controller.Robot_Position.Get_Target_Angle())
     else:
@@ -383,7 +400,7 @@ def STM32_Message_Callback_Handler(Message):
 def Node_subscribe():
     rospy.init_node('flood_fill',anonymous = True)
     rospy.Subscriber("map",OccupancyGrid, Map_Callback_Handler)
-    rospy.Subscriber("slam_out_pose",PoseStamped, Position_Callback_Handler)
+    # rospy.Subscriber("slam_out_pose",PoseStamped, Position_Callback_Handler)
     rospy.Subscriber("STM32_Message",String, STM32_Message_Callback_Handler)
     rospy.spin()
 
