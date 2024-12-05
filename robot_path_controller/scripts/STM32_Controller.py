@@ -35,7 +35,7 @@ def Command_Handler(Command):
     Command_Value = Command.value
     print(Command_Type)
     print(Command_Value)
-    if (Command_Type == "Foward" or Command_Type == "Backward"):
+    if (Command_Type == "Forward" or Command_Type == "Backward"):
         Data = f"{Command_Type}\0"
     elif (Command_Type == "Rotate-Right" or Command_Type == "Rotate-Left"):
         Data = f"{Command_Type}/{Command_Value}\0"
