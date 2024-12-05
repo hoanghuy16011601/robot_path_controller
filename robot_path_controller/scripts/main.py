@@ -305,9 +305,11 @@ class Controller():
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
         Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
         if Reponse == True:
+            print("Robot has covered full map")
             Target_Pose = self.Robot_Position.Get_Start_Position()
         else:
             Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
+        print(f"Target Pose {Target_Pose}")
         Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
         return Path[0]
     
