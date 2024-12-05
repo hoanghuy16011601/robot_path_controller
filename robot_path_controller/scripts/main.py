@@ -242,8 +242,6 @@ class Controller():
         self.Penalty_Map = Penalty_Map
         self.Robot_Position = Robot_Position
         self.Path_Planning = Path_Planning
-        self.Command_Message = Command()
-        self.Publisher = rospy.Publisher("Commander",Command,queue_size=50)
 
     def __Determine_Possible_NewPosition_To_Move(self):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
@@ -286,48 +284,46 @@ class Controller():
                     pass
         return New_Pose
     
-    def Determine_New_Position_For_Robot(self):
-        Positon_Now = self.Robot_Position.Get_Now_Position()
-        Penalty_Map_Now = self.Penalty_Map.Get_Penalty_Map()
+    def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
         Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
-        print(f"Now Position is {Positon_Now}")
+        print(f"Now Position is {Now_Position}")
         print(f"New Target Position is {Target_Pose}")
-        Path = self.Path_Planning.Find_Path(Start_Grid=Positon_Now,End_Grid=Target_Pose,Penalty_Map=Penalty_Map_Now)
+        Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
         return Path[0]
     
-    def Determine_Command_For_Robot(self,Target_Position:tuple):
+    def Determine_New_Angle_For_Robot(self,Target_Position:tuple, Now_Position:tuple, Now_Angle:int):
+        if Now_Position[0] == Target_Position[0]: # X_Now == X_Target => Y_Now != Y_Target
+            if Now_Position[1] < Target_Position[1]:    # Y_Now < Y_Target
+                New_Angle = 0
+            else:                                       # Y_Now > Y_Target
+                New_Angle = 180
+        else:                                     # X_Now != X_Target  => Y_Now == Y_Target
+            if Now_Position[0] < Target_Position[0]:    # X_Now < X_Target
+                New_Angle = 90
+            else:
+                New_Angle = 270
+        return New_Angle
+    
+    def Determine_Commands_For_Robot(self, Target_Angle:int, Now_Angle:int):
 
     # if Angle is 0 degree so the robot in direct toward increase of y-axis
     # if Angle is 90 degree so the robot in direct toward increase of x-axis
     # if angle is 180 degree so the robot in direct toward decrease of y-axis
     # if angle is 270 degree so the robot in direct toward decrease of x-axis
 
-    # 0 <= Angle <= 360
-
-        Now_Position = self.Robot_Position.Get_Now_Position()
-        Now_Angle = self.Robot_Position.Get_Now_Angle()
+    # 0 <= Angle < 360
+        List_Commands = []
         Command = {
             "Type"  : "",
             "Value" : 0
         }
-        Target_Angle = 0
-        if Now_Position[0] == Target_Position[0]: # X_Now == X_Target => Y_Now != Y_Target
-            if Now_Position[1] < Target_Position[1]:    # Y_Now < Y_Target
-                Target_Angle = 0
-            else:                                       # Y_Now > Y_Target
-                Target_Angle = 180
-        else:                                     # X_Now != X_Target  => Y_Now == Y_Target
-            if Now_Position[0] < Target_Position[0]:    # X_Now < X_Target
-                Target_Angle = 90
-            else:
-                Target_Angle = 270
-        
+
         if Target_Angle == Now_Angle:           # In same direction so can move
             Command["Type"] = "Forward"
-            Command["Value"] = 0.4
+            Command["Value"] = 40
         elif abs(Target_Angle - Now_Angle) == 180:
             Command["Type"] = "Backward"
-            Command["Value"] = 0.4
+            Command["Value"] = 40
         else:                                   # Not same direction so must be rotate first
             if (Target_Angle - Now_Angle) > 0:
                 if (Target_Angle - Now_Angle) == 90: 
@@ -343,77 +339,114 @@ class Controller():
                 else:
                     Command["Type"] = "Rotate-Left"
                     Command["Value"] = 90
-        return Command,Target_Angle
+        
+
+        if Command["Type"] == "Forward" or Command["Type"] == "Backward":
+            List_Commands.append(Command)
+        else:
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 20
+            })
+            List_Commands.append(Command)
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 20
+            })
+        return List_Commands
     
-    def Command_Robot(self):
-        New_Position = self.Determine_New_Position_For_Robot()
-        New_Command, New_Angle = self.Determine_Command_For_Robot(Target_Position=New_Position)
+    def Get_List_Command_Robot(self):
+        Now_Position = self.Robot_Position.Get_Now_Position()
+        Now_Angle = self.Robot_Position.Get_Now_Angle()
+        Now_Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
+
+        New_Position = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
+        New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
 
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
 
-        self.Command_Message.type = New_Command["Type"]
-        self.Command_Message.value = New_Command["Value"]
-        print(New_Command)
+        List_Commands = self.Determine_Commands_For_Robot(Target_Angle=New_Angle,Now_Angle=Now_Angle)
+        return List_Commands
+
+
+class Main():
+    def __init__(self) -> None:
+        self.Command_Message = Command()
+        self.Publisher = rospy.Publisher("Commander",Command,queue_size=50)
+        self.Algorithm_Controller = Controller(Penalty_Map=Penalty_Map(),
+                                        Robot_Position=Position(),
+                                        Path_Planning=Dijkstra(Number_X_Axis=Penalty_Map().Get_Number_X_Axis_In_Map(),Number_Y_Axis=Penalty_Map().Get_Number_X_Axis_In_Map()))
+
+        self.List_Command = []
+        self.Flag_Map = False
+        self.Flag_Position = False
+
+    def __Send_Command_To_Robot(self, Command):
+        self.Command_Message.type = Command["Type"]
+        self.Command_Message.value = Command["Value"]
+        print(Command)
         self.Publisher.publish(self.Command_Message)
 
+    def Map_Callback_Handler(self,data):
+        self.Flag_Map = True
+        self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
+        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=self.Algorithm_Controller.Robot_Position.Get_Passed_Positions())
+        # print(Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
+
+    def Position_Callback_Handler(self,msg):
+        self.Flag_Position = True
+        X = msg.pose.position.x
+        Y = msg.pose.position.y
+        self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
 
 
-Algorithm_Controller = Controller(Penalty_Map=Penalty_Map(),
-                                  Robot_Position=Position(),
-                                  Path_Planning=Dijkstra(Number_X_Axis=Penalty_Map().Get_Number_X_Axis_In_Map(),Number_Y_Axis=Penalty_Map().Get_Number_X_Axis_In_Map()))
-
-Flag_Map = False
-Flag_Position = False
-
-def Map_Callback_Handler(data):
-    global Flag_Map
-    Flag_Map = True
-    Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
-    Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=Algorithm_Controller.Robot_Position.Get_Passed_Positions())
-    # print(Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
-
-def Position_Callback_Handler(msg):
-    global Flag_Position
-    Flag_Position = True
-    X = msg.pose.position.x
-    Y = msg.pose.position.y
-    Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
-
-
-def STM32_Message_Callback_Handler(Message):
-    print("Receive data from topic STM32_Message")
-    if Message.data == "Start":
-        while (Flag_Map == False):
-            pass                                                ## Waiting for setup finish
-    elif Message.data == "Movement_Okay":
-        Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Algorithm_Controller.Robot_Position.Get_Target_Position())
-        Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Algorithm_Controller.Robot_Position.Get_Target_Position())
-    elif Message.data == "Rotation_Okay":
-        Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=Algorithm_Controller.Robot_Position.Get_Target_Angle())
-    else:
-        pass # Error. Reserve 
-    
-    Algorithm_Controller.Command_Robot()
-
-
-    
-def Node_subscribe():
-    rospy.init_node('flood_fill',anonymous = True)
-    rospy.Subscriber("map",OccupancyGrid, Map_Callback_Handler)
-    # rospy.Subscriber("slam_out_pose",PoseStamped, Position_Callback_Handler)
-    rospy.Subscriber("STM32_Message",String, STM32_Message_Callback_Handler)
-    rospy.spin()
+    def STM32_Message_Callback_Handler(self,Message):
+        if Message.data == "Start":
+            while (self.Flag_Map == False):
+                pass                                                ## Waiting for setup finish
+        elif Message.data == "Movement_Okay":
+            Last_Command = self.List_Command[0]
+            if Last_Command["Value"] == 20:
+                if len(self.List_Command == 1):
+                    self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
+                else:
+                    pass
+            else:
+                self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
+                self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
+            
+            del self.List_Command[0]
+        elif Message.data == "Rotation_Okay":
+            del self.List_Command[0]
+        else:
+            pass # Error. Reserve 
+        
+        if len(self.List_Command == 0):
+            self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()
+        else: 
+            pass
+        self.__Send_Command_To_Robot(Command = self.List_Command[0])
+        
+    def Node_subscribe(self):
+        rospy.init_node('flood_fill',anonymous = True)
+        rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
+        # rospy.Subscriber("slam_out_pose",PoseStamped, Position_Callback_Handler)
+        rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
+        print("Controller Started")
+        rospy.spin()
 
 
 
 if __name__ == '__main__':
-    print("Flood Fill Algorithm Start")
+    print("Initialize Controller")
+    Main_Controller = Main()
     try:
-        Node_subscribe()
+        Main_Controller.Node_subscribe()
     except rospy.ROSInterruptException:
         print("Cannot subscribe topic map")
         pass
+
     
     # rospy.init_node("Determine_Path")
     # # Path_Publish = rospy.Publisher("path",)
