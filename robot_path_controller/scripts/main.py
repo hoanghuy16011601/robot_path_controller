@@ -147,7 +147,7 @@ class Penalty_Map():
         for Position in Passed_Positions:
             X_Axis = Position[0]
             Y_Axis = Position[1]
-            self.Penalty_Map[X_Axis][Y_Axis] = 35
+            self.Penalty_Map[X_Axis][Y_Axis] = 40
     
     def Get_Penalty_Map(self):
         return self.Penalty_Map
@@ -157,8 +157,9 @@ class Penalty_Map():
 
 class Position():
     def __init__(self) -> None:
-        self.Passed_Positions = [(12,12)]
-        self.Now_Position = (12,12)
+        self.Start_Position = (12,12)
+        self.Passed_Positions = [self.Start_Position]
+        self.Now_Position = (self.Start_Position)
         self.Last_Position = ()
         self.Target_Position = ()
         self.Count_Check = 0
@@ -203,6 +204,9 @@ class Position():
         else:
             pass
     
+    def Get_Start_Position(self):
+        return self.Start_Position
+    
     def Get_Now_Position(self):
         return self.Now_Position
     
@@ -243,6 +247,21 @@ class Controller():
         self.Robot_Position = Robot_Position
         self.Path_Planning = Path_Planning
 
+    def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
+        Lowest_Point = 40
+        Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map() 
+        for X in range(0,Length_Axis):
+            for Y in range(0,Length_Axis):
+                if Penalty_Map[X][Y] < Lowest_Point:
+                    Lowest_Point = Penalty_Map[X][Y]
+                else:
+                    pass
+        if Lowest_Point < 40:
+            Is_Cover_Full_Map = False
+        else:
+            Is_Cover_Full_Map = True
+        return Is_Cover_Full_Map
+        
     def __Determine_Possible_NewPosition_To_Move(self):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
@@ -250,7 +269,7 @@ class Controller():
         X_Now = Position[0]
         Y_Now = Position[1]
         New_Pose = ()
-        Penalty_Point_Of_New_Pose = 1000000 
+        Penalty_Point_Of_New_Pose = 1000000
         ## Create penalty map for possible position finding, too far to X_Now (in X-Axis) too more penalty point 
         Penalty_Map_For_Possible_Pose = copy.deepcopy(Penalty_Map)
         for X_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
@@ -260,7 +279,6 @@ class Controller():
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += 20
                 else:
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += Penalty_Point
-        print(Penalty_Map_For_Possible_Pose)
         ## Finding the pose have smallest penalty point
         for X_Check in range(0,Length_Axis):
             for Y_Check in range(0,Length_Axis):
@@ -272,7 +290,7 @@ class Controller():
                         if (abs(X_Now - X_Check) < abs(X_Now - New_Pose[0])):
                             New_Pose = (X_Check,Y_Check)
                         elif (abs(X_Now - X_Check) == abs(X_Now - New_Pose[0])):
-                            if (abs(Y_Now - Y_Check) > abs(Y_Now - New_Pose[1])):
+                            if (abs(Y_Now - Y_Check) < abs(Y_Now - New_Pose[1])):
                                 New_Pose = (X_Check,Y_Check)
                             else:
                                 pass
@@ -285,9 +303,11 @@ class Controller():
         return New_Pose
     
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
-        Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
-        print(f"Now Position is {Now_Position}")
-        print(f"New Target Position is {Target_Pose}")
+        Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
+        if Reponse == True:
+            Target_Pose = self.Robot_Position.Get_Start_Position()
+        else:
+            Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
         Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
         return Path[0]
     
