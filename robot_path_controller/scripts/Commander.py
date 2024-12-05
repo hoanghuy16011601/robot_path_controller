@@ -433,7 +433,7 @@ class Main():
                 pass                                                ## Waiting for setup finish
         elif Message.data == "Movement_Okay":
             Last_Command = self.List_Command[0]
-            if Last_Command["Value"] == 20:
+            if Last_Command["Value"] == 15:
                 if len(self.List_Command) == 1:
                     self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
                 else:
