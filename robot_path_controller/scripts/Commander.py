@@ -412,7 +412,6 @@ class Main():
     def __Send_Command_To_Robot(self, Command):
         self.Command_Message.type = Command["Type"]
         self.Command_Message.value = Command["Value"]
-        print(Command)
         self.Publisher.publish(self.Command_Message)
 
     def Map_Callback_Handler(self,data):
