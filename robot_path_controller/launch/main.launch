@@ -1,0 +1,4 @@
+<launch>
+<node pkg = "robot_path_controller" type = "Commander.py" name = "Command_For_STM32" output = "screen"></node>
+<node pkg = "robot_path_controller" type = "Communication.py" name = "Communicate_With_STM32" output = "screen"></node>
+</launch>

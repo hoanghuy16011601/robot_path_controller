@@ -322,9 +322,9 @@ class Controller():
                 New_Angle = 180
         else:                                     # X_Now != X_Target  => Y_Now == Y_Target
             if Now_Position[0] < Target_Position[0]:    # X_Now < X_Target
-                New_Angle = 90
-            else:
                 New_Angle = 270
+            else:
+                New_Angle = 90
         return New_Angle
     
     def Determine_Commands_For_Robot(self, Target_Angle:int, Now_Angle:int):
