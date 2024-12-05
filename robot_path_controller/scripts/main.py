@@ -387,7 +387,8 @@ def STM32_Message_Callback_Handler(Message):
         while (Flag_Map == False):
             pass                                                ## Waiting for setup finish
     elif Message.data == "Movement_Okay":
-        Algorithm_Controller.Robot_Position.up
+        Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Algorithm_Controller.Robot_Position.Get_Target_Position())
+        Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Algorithm_Controller.Robot_Position.Get_Target_Position())
     elif Message.data == "Rotation_Okay":
         Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=Algorithm_Controller.Robot_Position.Get_Target_Angle())
     else:
