@@ -250,6 +250,7 @@ class Controller():
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
         Lowest_Point = 40
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map() 
+        print(self.Penalty_Map)
         for X in range(0,Length_Axis):
             for Y in range(0,Length_Axis):
                 if Penalty_Map[X][Y] < Lowest_Point:
