@@ -250,7 +250,6 @@ class Controller():
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
         Lowest_Point = 40
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map() 
-        print(Penalty_Map)
         for X in range(0,Length_Axis):
             for Y in range(0,Length_Axis):
                 if Penalty_Map[X][Y] < Lowest_Point:
@@ -310,7 +309,6 @@ class Controller():
             Target_Pose = self.Robot_Position.Get_Start_Position()
         else:
             Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
-        print(f"Target Pose {Target_Pose}")
         Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
         return Path[0]
     
@@ -385,7 +383,7 @@ class Controller():
 
         New_Position = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
         New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
-
+        print(f"New_Position {New_Position}")
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
 
