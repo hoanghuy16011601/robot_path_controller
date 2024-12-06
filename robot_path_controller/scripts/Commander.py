@@ -193,7 +193,7 @@ class Position():
 
         self.Last_Position = Check_Position
         
-        if self.Count_Check == 5:
+        if self.Count_Check == 3:
             self.Count_Check = 0
             Now_Position = Check_Position
         else:
