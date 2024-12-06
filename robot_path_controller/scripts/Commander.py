@@ -263,6 +263,7 @@ class Controller():
         self.Penalty_Map = Penalty_Map
         self.Robot_Position = Robot_Position
         self.Path_Planning = Path_Planning
+        self.Finish_Flag = False
 
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
         Lowest_Point = 40
@@ -327,11 +328,11 @@ class Controller():
             if Now_Position != self.Robot_Position.Get_Start_Position():
                 Target_Pose = self.Robot_Position.Get_Start_Position()
             else:
-                return (-1,-1)
+                return self.Robot_Position.Get_Start_Position(),True
         else:
             Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
         Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
-        return Path[0]
+        return Path[0], False
     
     def Determine_New_Angle_For_Robot(self,Target_Position:tuple, Now_Position:tuple, Now_Angle:int):
         if Now_Position[0] == Target_Position[0]: # X_Now == X_Target => Y_Now != Y_Target
@@ -469,8 +470,11 @@ class Controller():
         }
 
         if Target_Angle == Now_Angle:           # In same direction so can move
-            Command["Type"] = "Forward"
-            Command["Value"] = 40
+            if self.Finish_Flag == True:
+                Command["Type"] = "Finish"
+            else:
+                Command["Type"] = "Forward"
+                Command["Value"] = 40
         elif abs(Target_Angle - Now_Angle) == 180:
             Command["Type"] = "Back_Movement"
             Command["Value"] = 180
@@ -518,13 +522,15 @@ class Controller():
         Now_Position = self.Robot_Position.Get_Now_Position()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         Now_Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-        New_Position = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
-        New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
-        print(f"Now_Position {Now_Position}")
-        print(f"New_Position {New_Position}")
+        New_Position,Was_Back_To_Start = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
+        if Was_Back_To_Start == False:
+            New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
+        else:
+            New_Angle = 0
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
-
+        print(f"Now_Position {Now_Position}")
+        print(f"New_Position {New_Position}")
         List_Commands = self.Determine_Commands_For_Robot(Target_Angle=New_Angle,Now_Angle=Now_Angle)
         return List_Commands
 
@@ -559,7 +565,6 @@ class Main():
         Angle_W = msg.pose.orientation.w
         Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(Position_X,Position_Y))
         SLAM_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_SLAM_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
-        print(Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
@@ -597,7 +602,10 @@ class Main():
                 pass
         else: 
             pass
-        self.__Send_Command_To_Robot(Command = self.List_Command[0])
+        if self.List_Command["Type"] == "Finish":
+            print("Finish")
+        else:
+            self.__Send_Command_To_Robot(Command = self.List_Command[0])
         
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
