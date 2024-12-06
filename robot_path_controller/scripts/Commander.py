@@ -193,12 +193,12 @@ class Position():
 
         self.Last_Position == Check_Position
         
-        if self.Count_Check == 5:
+        if self.Count_Check == 10:
             self.Count_Check = 0
             Now_Position = Check_Position
         else:
             Now_Position = self.Now_Position
-        print(self.Count_Check)
+        print(f"Check: {Check_Position} Last: {self.Last_Position} Count: {self.Count_Check}")
         return Now_Position
     
     def Get_Start_Position(self):
