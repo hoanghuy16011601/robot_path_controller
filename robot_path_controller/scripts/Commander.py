@@ -6,6 +6,7 @@ from std_msgs.msg import String
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
 from robot_path_controller.msg import Command
+import time
 
 
 
@@ -494,7 +495,7 @@ class Main():
         Angle_W = msg.pose.orientation.w
         Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(Position_X,Position_Y))
         SLAM_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_SLAM_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
-        print(SLAM_Now_Angle)
+        print(f"Slam_Angle {SLAM_Now_Angle}")
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
@@ -520,6 +521,7 @@ class Main():
             pass # Error. Reserve 
 
         if len(self.List_Command) ==0:
+            time.sleep(0.5)
             self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Command) == 0:
                 self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
