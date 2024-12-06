@@ -426,7 +426,7 @@ class Controller():
         elif Command["Type"] == "Rotate-HaftCircle":
             List_Commands.append({
                 "Type"  : "Rotate-Right",
-                "Value" : 180
+                "Value" : 90
             })
             List_Commands.append({
                 "Type"  : "Backward",
@@ -434,7 +434,7 @@ class Controller():
             })
             List_Commands.append({
                 "Type"  : "Rotate-Right",
-                "Value" : 180
+                "Value" : 90
             })
         else:
             List_Commands.append({
