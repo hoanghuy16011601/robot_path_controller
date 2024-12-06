@@ -162,30 +162,31 @@ class Position():
         self.Passed_Positions = [self.Start_Position]
         self.Now_Position = (self.Start_Position)
         self.Last_Position = self.Start_Position
+        self.SLAM_Now_Angle = 0
         self.Target_Position = ()
         self.Count_Check = 0
         self.Now_Angle = 0
         self.Target_Angle = 0
 
     
-    def __Convert_Slam_Pose_To_Our_Position(self,Slam_Pose:tuple):
-        Slam_Pose_X = Slam_Pose[0]
-        Slam_Pose_Y = Slam_Pose[1]
+    def __Convert_SLAM_Pose_To_Our_Position(self,SLAM_Pose:tuple):
+        SLAM_Pose_X = SLAM_Pose[0]
+        SLAM_Pose_Y = SLAM_Pose[1]
 
-        if Slam_Pose_X > 0:
-            Position_X = (int)((Slam_Pose_X + 0.2)/0.4) + 12
+        if SLAM_Pose_X > 0:
+            Position_X = (int)((SLAM_Pose_X + 0.2)/0.4) + 12
         else:
-            Position_X = (int)((Slam_Pose_X-0.2)/0.4) + 12
+            Position_X = (int)((SLAM_Pose_X-0.2)/0.4) + 12
 
-        if Slam_Pose_Y > 0:
-            Position_Y = (int)((Slam_Pose_Y + 0.2)/0.4) + 12
+        if SLAM_Pose_Y > 0:
+            Position_Y = (int)((SLAM_Pose_Y + 0.2)/0.4) + 12
         else:
-            Position_Y = (int)((Slam_Pose_Y-0.2)/0.4) + 12
+            Position_Y = (int)((SLAM_Pose_Y-0.2)/0.4) + 12
         
         return (Position_X,Position_Y)
 
-    def Determine_Now_Position(self,Slam_Pose:tuple):
-        Check_Position = self.__Convert_Slam_Pose_To_Our_Position(Slam_Pose=Slam_Pose)
+    def Determine_Now_Position(self,SLAM_Pose:tuple):
+        Check_Position = self.__Convert_SLAM_Pose_To_Our_Position(SLAM_Pose=SLAM_Pose)
 
         if Check_Position == self.Last_Position:
             self.Count_Check +=1
@@ -201,9 +202,13 @@ class Position():
             Now_Position = self.Now_Position
         return Now_Position
     
-    def Determine_Slam_Now_Angle(self,Angle_Z, Angle_W):
+    def Determine_SLAM_Now_Angle(self,Angle_Z, Angle_W):
         Theta_Angle = 2*math.atan2(Angle_Z,Angle_W)
         Degrees_Angle = math.degrees(Theta_Angle)
+        if Degrees_Angle >= 0:
+            Degrees_Angle = 360 - Degrees_Angle
+        else:
+            Degrees_Angle = -Degrees_Angle 
         return Degrees_Angle
     
     def Get_Start_Position(self):
@@ -214,6 +219,12 @@ class Position():
     
     def Update_Now_Position(self,Position):
         self.Now_Position = Position
+
+    def Update_SLAM_Now_Angle(self,Degrees_Value):
+        self.SLAM_Now_Angle = Degrees_Value
+
+    def Get_SLAM_Now_Angle(self):
+        return self.SLAM_Now_Angle
     
     def Get_Target_Position(self):
         return self.Target_Position
@@ -327,6 +338,43 @@ class Controller():
                 New_Angle = 180
         return New_Angle
     
+    def Fix_Error_Degreed(self):
+        Command = {
+            "Type"  : "",
+            "Value" : 0
+        }
+
+        SLAM_Now_Angle = self.Robot_Position.Get_SLAM_Now_Angle()
+        Now_Angle = self.Robot_Position.Get_Now_Angle()
+        if Now_Angle == 0:
+            Now_Angle = 360
+            if SLAM_Now_Angle >= 0 and SLAM_Now_Angle < 180: 
+                Error = SLAM_Now_Angle
+            else:
+                Error = Now_Angle - SLAM_Now_Angle
+        else:
+            Error = abs(Now_Angle - SLAM_Now_Angle)
+        if Error > 3:
+            if (Now_Angle - SLAM_Now_Angle) > 0:
+                if (Now_Angle - SLAM_Now_Angle) > 180:
+                    Command["Type"] = "Rotate-Left"
+                    Command["Value"] = 360-(Now_Angle - SLAM_Now_Angle)
+                else:
+                    Command["Type"] = "Rotate-Right"
+                    Command["Value"] = Now_Angle - SLAM_Now_Angle
+
+            else:
+                if (Now_Angle - SLAM_Now_Angle) < -180:
+                    Command["Type"] = "Rotate-Right"
+                    Command["Value"] = 360 + (Now_Angle - SLAM_Now_Angle)
+                else:
+                    Command["Type"] = "Rotate-Left"
+                    Command["Value"] = -(Now_Angle - SLAM_Now_Angle)
+            List_Commands = Command
+        else:
+            List_Commands = []
+        
+
     def Determine_Commands_For_Robot(self, Target_Angle:int, Now_Angle:int):
 
     # if Angle is 0 degree so the robot in direct toward increase of y-axis
@@ -370,8 +418,19 @@ class Controller():
                     Command["Value"] = -(Target_Angle - Now_Angle)
         
 
-        if Command["Type"] == "Forward" or Command["Type"] == "Backward":
+        if Command["Type"] == "Forward":
             List_Commands.append(Command)
+        
+        elif Command["Type"] == "Backward":
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 35
+            })
+            List_Commands.append(Command)
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 35
+            })
         else:
             List_Commands.append({
                 "Type"  : "Backward",
@@ -427,9 +486,9 @@ class Main():
         Position_Y = msg.pose.position.y
         Angle_Z = msg.pose.orientation.z
         Angle_W = msg.pose.orientation.w
-        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(Position_X,Position_Y))
-        Slam_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_Slam_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
-        print(f"Position:{Now_Position}--Angle:{Slam_Now_Angle}")
+        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(Position_X,Position_Y))
+        SLAM_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_SLAM_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
+        print(f"Position:{Now_Position}--Angle:{SLAM_Now_Angle}")
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
@@ -452,9 +511,13 @@ class Main():
             del self.List_Command[0]
         else:
             pass # Error. Reserve 
-        
+
         if len(self.List_Command) ==0:
-            self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()
+            self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
+            if len(self.List_Command) == 0:
+                self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
+            else:
+                pass
         else: 
             pass
         self.__Send_Command_To_Robot(Command = self.List_Command[0])
@@ -462,7 +525,7 @@ class Main():
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
-        rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)
+        rospy.Subscriber("SLAM_out_pose",PoseStamped, self.Position_Callback_Handler)
         rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
         print("Controller Started")
         rospy.spin()
