@@ -290,8 +290,8 @@ class Controller():
         ## Create penalty map for possible position finding, too far to X_Now (in X-Axis) too more penalty point 
         Penalty_Map_For_Possible_Pose = copy.deepcopy(Penalty_Map)
         for X_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
-            Penalty_Point = abs(X_Now - X_Penalty_Map_For_Possible_Pose)
             for Y_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
+                Penalty_Point = abs(Y_Now - Y_Penalty_Map_For_Possible_Pose)
                 if Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] == 35:
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += 20
                 else:
@@ -304,10 +304,10 @@ class Controller():
                         New_Pose = (X_Check,Y_Check)
                         Penalty_Point_Of_New_Pose = Penalty_Map_For_Possible_Pose[X_Check][Y_Check]
                     elif Penalty_Map_For_Possible_Pose[X_Check][Y_Check] == Penalty_Point_Of_New_Pose:
-                        if (abs(X_Now - X_Check) < abs(X_Now - New_Pose[0])):
+                        if (abs(Y_Now - Y_Check) < abs(Y_Now - New_Pose[1])):
                             New_Pose = (X_Check,Y_Check)
-                        elif (abs(X_Now - X_Check) == abs(X_Now - New_Pose[0])):
-                            if (abs(Y_Now - Y_Check) < abs(Y_Now - New_Pose[1])):
+                        elif (abs(Y_Now - Y_Check) == abs(Y_Now - New_Pose[1])):
+                            if (abs(X_Now - X_Check) < abs(Y_Now - New_Pose[1])):
                                 New_Pose = (X_Check,Y_Check)
                             else:
                                 pass
