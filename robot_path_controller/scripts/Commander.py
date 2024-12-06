@@ -414,13 +414,14 @@ class Main():
         self.Flag_Map = True
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
         self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=self.Algorithm_Controller.Robot_Position.Get_Passed_Positions())
-        # print(Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
+        print(self.Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
 
     def Position_Callback_Handler(self,msg):
         self.Flag_Position = True
         X = msg.pose.position.x
         Y = msg.pose.position.y
         Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
+        print(Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
