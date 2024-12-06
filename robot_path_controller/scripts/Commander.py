@@ -516,6 +516,10 @@ class Main():
                 pass
             del self.List_Command[0]
         elif Message.data == "Rotation_Okay":
+            if len(self.List_Command > 1):
+                pass
+            else:
+                self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
             del self.List_Command[0]
         else:
             pass # Error. Reserve 
