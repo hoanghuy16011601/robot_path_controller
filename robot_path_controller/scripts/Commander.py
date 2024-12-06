@@ -494,6 +494,7 @@ class Main():
         Angle_W = msg.pose.orientation.w
         Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(Position_X,Position_Y))
         SLAM_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_SLAM_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
+        print(SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
