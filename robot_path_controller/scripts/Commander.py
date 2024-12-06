@@ -414,7 +414,6 @@ class Main():
         self.Flag_Map = True
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
         self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=self.Algorithm_Controller.Robot_Position.Get_Passed_Positions())
-        print(self.Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
 
     def Position_Callback_Handler(self,msg):
         self.Flag_Position = True
