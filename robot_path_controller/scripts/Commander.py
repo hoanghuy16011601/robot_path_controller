@@ -527,6 +527,7 @@ class Controller():
             New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
         else:
             New_Angle = 0
+            self.Finish_Flag = True
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
         print(f"Now_Position {Now_Position}")
