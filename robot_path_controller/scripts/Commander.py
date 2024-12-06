@@ -373,6 +373,7 @@ class Controller():
             List_Commands = Command
         else:
             List_Commands = []
+        return List_Commands
         
 
     def Determine_Commands_For_Robot(self, Target_Angle:int, Now_Angle:int):
