@@ -311,14 +311,14 @@ class Controller():
     def Determine_New_Angle_For_Robot(self,Target_Position:tuple, Now_Position:tuple, Now_Angle:int):
         if Now_Position[0] == Target_Position[0]: # X_Now == X_Target => Y_Now != Y_Target
             if Now_Position[1] < Target_Position[1]:    # Y_Now < Y_Target
-                New_Angle = 0
+                New_Angle = 270
             else:                                       # Y_Now > Y_Target
-                New_Angle = 180
+                New_Angle = 90
         else:                                     # X_Now != X_Target  => Y_Now == Y_Target
             if Now_Position[0] < Target_Position[0]:    # X_Now < X_Target
-                New_Angle = 270
+                New_Angle = 0
             else:
-                New_Angle = 90
+                New_Angle = 180
         return New_Angle
     
     def Determine_Commands_For_Robot(self, Target_Angle:int, Now_Angle:int):
