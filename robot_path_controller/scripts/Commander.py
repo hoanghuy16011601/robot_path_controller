@@ -1,4 +1,5 @@
 #!/usr/bin/env
+import math
 import rospy
 import copy
 from std_msgs.msg import String 
@@ -199,6 +200,11 @@ class Position():
         else:
             Now_Position = self.Now_Position
         return Now_Position
+    
+    def Determine_Slam_Now_Angle(self,Angle_Z, Angle_W):
+        Theta_Angle = 2*math.atan2(Angle_Z,Angle_W)
+        Degrees_Angle = math.degrees(Theta_Angle)
+        return Degrees_Angle
     
     def Get_Start_Position(self):
         return self.Start_Position
@@ -415,12 +421,15 @@ class Main():
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
         self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=self.Algorithm_Controller.Robot_Position.Get_Passed_Positions())
 
-    def Position_Callback_Handler(self,msg):
+    def Position_Callback_Handler(self,msg:PoseStamped):
         self.Flag_Position = True
-        X = msg.pose.position.x
-        Y = msg.pose.position.y
-        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
-        print(Now_Position)
+        Position_X = msg.pose.position.x
+        Position_Y = msg.pose.position.y
+        Angle_Z = msg.pose.orientation.z
+        Angle_W = msg.pose.orientation.w
+        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(Position_X,Position_Y))
+        Slam_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_Slam_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
+        print(f"Position:{Now_Position}--Angle:{Slam_Now_Angle}")
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
