@@ -602,7 +602,7 @@ class Main():
                 pass
         else: 
             pass
-        if self.List_Command["Type"] == "Finish":
+        if self.List_Command[0]["Type"] == "Finish":
             print("Finish")
         else:
             self.__Send_Command_To_Robot(Command = self.List_Command[0])
