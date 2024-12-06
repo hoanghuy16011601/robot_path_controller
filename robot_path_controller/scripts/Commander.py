@@ -156,6 +156,9 @@ class Penalty_Map():
 
     def Get_Number_X_Axis_In_Map(self):
         return self.__Number_Grid_In_Edge_Map 
+    
+    def Get_Penalty_Point_Of_Position(self,Position):
+        return self.Penalty_Map[Position[0]][Position[1]]
 
 class Position():
     def __init__(self) -> None:
@@ -376,7 +379,71 @@ class Controller():
         else:
             List_Commands = []
         return List_Commands
+    
+    def __Determine_Penalty_Point_Of_Around_Position(self):
+        (X_Now,Y_Now) = self.Robot_Position.Get_Now_Position()
+        Now_Angle = self.Robot_Position.Get_Now_Angle()
+        if Now_Angle == 0:
+            Head_Pose =     (X_Now + 1,Y_Now)
+            Left_Pose =     (X_Now,Y_Now - 1)
+            Back_Pose =     (X_Now - 1,Y_Now)
+            Right_Pose =    (X_Now,Y_Now + 1)
+        elif Now_Angle == 90:
+            Head_Pose =     (X_Now,Y_Now - 1)
+            Left_Pose =     (X_Now + 1,Y_Now)
+            Back_Pose =     (X_Now,Y_Now + 1)
+            Right_Pose =    (X_Now - 1,Y_Now)
+        elif Now_Angle == 180:
+            Head_Pose =     (X_Now - 1,Y_Now)
+            Left_Pose =     (X_Now,Y_Now + 1)
+            Back_Pose =     (X_Now + 1,Y_Now)
+            Right_Pose =    (X_Now,Y_Now - 1)
+        else:
+            Head_Pose =     (X_Now,Y_Now + 1)
+            Left_Pose =     (X_Now - 1,Y_Now)
+            Back_Pose =     (X_Now,Y_Now - 1)
+            Right_Pose =    (X_Now + 1,Y_Now)
         
+        Head_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Head_Pose)
+        Right_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Right_Pose)
+        Left_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Left_Pose)
+        Back_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Back_Pose)
+        return Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty
+    def __Determine_Back_Solution(self):
+        List_Commands = []
+        Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty = self.__Determine_Penalty_Point_Of_Around_Position()
+        if Right_Penalty <= Left_Penalty and Right_Penalty <= Back_Penalty:
+            List_Commands.append({
+                "Type"  : "Rotate-Right",
+                "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 35
+            })
+            List_Commands.append({
+                "Type"  : "Rotate-Right",
+                "Value" : 90
+            })
+        elif Left_Penalty <= Back_Penalty:
+            List_Commands.append({
+                "Type"  : "Rotate-Left",
+                "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 35
+            })
+            List_Commands.append({
+                "Type"  : "Rotate-Left",
+                "Value" : 90
+            })
+        else:
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 40
+            })
+        return List_Commands
 
     def Determine_Commands_For_Robot(self, Target_Angle:int, Now_Angle:int):
 
@@ -396,8 +463,8 @@ class Controller():
             Command["Type"] = "Forward"
             Command["Value"] = 40
         elif abs(Target_Angle - Now_Angle) == 180:
-            Command["Type"] = "Rotate-HaftCircle"
-            Command["Value"] = 360
+            Command["Type"] = "Back_Movement"
+            Command["Value"] = 180
         else:                                   # Not same direction so must be rotate first
             if Target_Angle == 0:
                 Target_Angle = 360
@@ -424,19 +491,8 @@ class Controller():
         if Command["Type"] == "Forward":
             List_Commands.append(Command)
         
-        elif Command["Type"] == "Rotate-HaftCircle":
-            List_Commands.append({
-                "Type"  : "Rotate-Right",
-                "Value" : 90
-            })
-            List_Commands.append({
-                "Type"  : "Backward",
-                "Value" : 35
-            })
-            List_Commands.append({
-                "Type"  : "Rotate-Right",
-                "Value" : 90
-            })
+        elif Command["Type"] == "Back_Movement":
+            List_Commands = self.__Determine_Back_Solution()
         else:
             List_Commands.append({
                 "Type"  : "Backward",
@@ -524,7 +580,7 @@ class Main():
             pass # Error. Reserve 
 
         if len(self.List_Command) ==0:
-            time.sleep(0.5)
+            time.sleep(0.1)
             self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Command) == 0:
                 self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
