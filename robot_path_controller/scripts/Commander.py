@@ -395,8 +395,8 @@ class Controller():
             Command["Type"] = "Forward"
             Command["Value"] = 40
         elif abs(Target_Angle - Now_Angle) == 180:
-            Command["Type"] = "Backward"
-            Command["Value"] = 40
+            Command["Type"] = "Rotate-HaftCircle"
+            Command["Value"] = 360
         else:                                   # Not same direction so must be rotate first
             if Target_Angle == 0:
                 Target_Angle = 360
@@ -423,15 +423,18 @@ class Controller():
         if Command["Type"] == "Forward":
             List_Commands.append(Command)
         
-        elif Command["Type"] == "Backward":
+        elif Command["Type"] == "Rotate-HaftCircle":
+            List_Commands.append({
+                "Type"  : "Rotate-Right",
+                "Value" : 180
+            })
             List_Commands.append({
                 "Type"  : "Backward",
                 "Value" : 35
             })
-            List_Commands.append(Command)
             List_Commands.append({
-                "Type"  : "Backward",
-                "Value" : 35
+                "Type"  : "Rotate-Right",
+                "Value" : 180
             })
         else:
             List_Commands.append({
