@@ -419,8 +419,9 @@ class Main():
         self.Flag_Position = True
         X = msg.pose.position.x
         Y = msg.pose.position.y
+        print(X,Y)
         Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
-        print(Now_Position)
+        # print(Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
