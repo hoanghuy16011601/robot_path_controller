@@ -323,7 +323,11 @@ class Controller():
         Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
         if Reponse == True:
             print("Robot has covered full map")
-            Target_Pose = self.Robot_Position.Get_Start_Position()
+            
+            if Now_Position != self.Robot_Position.Get_Start_Position():
+                Target_Pose = self.Robot_Position.Get_Start_Position()
+            else:
+                return (-1,-1)
         else:
             Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
         Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
@@ -412,7 +416,12 @@ class Controller():
     def __Determine_Back_Solution(self):
         List_Commands = []
         Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty = self.__Determine_Penalty_Point_Of_Around_Position()
-        if Right_Penalty <= Left_Penalty and Right_Penalty <= Back_Penalty:
+        if Head_Penalty <= 40:
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 40
+            })
+        if Right_Penalty <= 40:
             List_Commands.append({
                 "Type"  : "Rotate-Right",
                 "Value" : 90
@@ -425,7 +434,7 @@ class Controller():
                 "Type"  : "Rotate-Right",
                 "Value" : 90
             })
-        elif Left_Penalty <= Back_Penalty:
+        elif Left_Penalty <= 40:
             List_Commands.append({
                 "Type"  : "Rotate-Left",
                 "Value" : 90
@@ -509,7 +518,7 @@ class Controller():
         Now_Position = self.Robot_Position.Get_Now_Position()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         Now_Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-
+        print(Now_Penalty_Map)
         New_Position = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
         New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
         print(f"Now_Position {Now_Position}")
