@@ -160,7 +160,7 @@ class Position():
         self.Start_Position = (12,12)
         self.Passed_Positions = [self.Start_Position]
         self.Now_Position = (self.Start_Position)
-        self.Last_Position = ()
+        self.Last_Position = self.Start_Position
         self.Target_Position = ()
         self.Count_Check = 0
         self.Now_Angle = 0
@@ -186,23 +186,19 @@ class Position():
     def Determine_Now_Position(self,Slam_Pose:tuple):
         Check_Position = self.__Convert_Slam_Pose_To_Our_Position(Slam_Pose=Slam_Pose)
 
-        if self.Last_Position == ():
-            self.Count_Check += 1
+        if Check_Position == self.Last_Position:
+            self.Count_Check +=1
         else:
-            if Check_Position == self.Last_Position:
-                self.Count_Check +=1
-            else:
-                self.Count_Check == 0
+            self.Count_Check == 0
 
         self.Last_Position == Check_Position
         
         if self.Count_Check == 10:
             self.Count_Check = 0
-            self.Now_Position = Check_Position
-            if Check_Position not in self.Passed_Positions:
-                self.Passed_Positions.append(Check_Position)
+            Now_Position = Check_Position
         else:
-            pass
+            Now_Position = self.Now_Position
+        return Now_Position
     
     def Get_Start_Position(self):
         return self.Start_Position
@@ -424,7 +420,9 @@ class Main():
         self.Flag_Position = True
         X = msg.pose.position.x
         Y = msg.pose.position.y
-        self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
+        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(Slam_Pose=(X,Y))
+        self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
+        self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
 
     def STM32_Message_Callback_Handler(self,Message):
@@ -439,9 +437,7 @@ class Main():
                 else:
                     pass
             else:
-                self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
-                self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
-            
+                pass
             del self.List_Command[0]
         elif Message.data == "Rotation_Okay":
             del self.List_Command[0]
@@ -457,7 +453,7 @@ class Main():
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
-        # rospy.Subscriber("slam_out_pose",PoseStamped, Position_Callback_Handler)
+        rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)
         rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
         print("Controller Started")
         rospy.spin()
