@@ -507,12 +507,12 @@ class Controller():
         else:
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : 15
             })
             List_Commands.append(Command)
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : 15
             })
         return List_Commands
     
