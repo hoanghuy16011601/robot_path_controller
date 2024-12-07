@@ -417,11 +417,6 @@ class Controller():
     def __Determine_Back_Solution(self):
         List_Commands = []
         Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty = self.__Determine_Penalty_Point_Of_Around_Position()
-        if Head_Penalty <= 40:
-            List_Commands.append({
-                "Type"  : "Backward",
-                "Value" : 40
-            })
         if Right_Penalty <= 40:
             List_Commands.append({
                 "Type"  : "Rotate-Right",
