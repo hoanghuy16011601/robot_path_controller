@@ -288,15 +288,19 @@ class Controller():
         Y_Now = Position[1]
         New_Pose = ()
         Penalty_Point_Of_New_Pose = 1000000
+        Free_Positions = []
         ## Create penalty map for possible position finding, too far to X_Now (in X-Axis) too more penalty point 
         Penalty_Map_For_Possible_Pose = copy.deepcopy(Penalty_Map)
         for X_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
             for Y_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
                 Penalty_Point = abs(Y_Now - Y_Penalty_Map_For_Possible_Pose)
+                if Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] == 16:
+                    Free_Positions.append((X_Penalty_Map_For_Possible_Pose,Y_Penalty_Map_For_Possible_Pose))
                 if Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] == 35:
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += 20
                 else:
                     Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += Penalty_Point
+        print(f"List Free Positions {Free_Positions}")
         ## Finding the pose have smallest penalty point
         for X_Check in range(0,Length_Axis):
             for Y_Check in range(0,Length_Axis):
@@ -380,7 +384,6 @@ class Controller():
                     Command["Type"] = "Rotate-Left"
                     Command["Value"] = -(Now_Angle - SLAM_Now_Angle)
             List_Commands = [Command]
-            print(f"Fix Error {Error}")
         else:
             List_Commands = []
         return List_Commands
