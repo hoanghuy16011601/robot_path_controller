@@ -59,7 +59,7 @@ class Lidar():
             self.Left_Distance = Left_Distance/Count
         
         Count = 0
-        for Index in range(Back_Index, Right_Index + 41):
+        for Index in range(Back_Index, Back_Index + 41):
             if math.isinf(msg.ranges[Index]) == False:
                 Back_Distance += msg.ranges[Index]
                 Count +=1 
@@ -71,7 +71,6 @@ class Lidar():
             self.Back_Distance = 10
         else:
             self.Back_Distance = Back_Distance/Count
-        print(Count)
 
 
 
