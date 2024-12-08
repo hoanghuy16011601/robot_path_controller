@@ -29,16 +29,16 @@ class Lidar():
             Head_Distance += msg.ranges[Index]
         
         for Index in range(Right_Index -30, Right_Index + 31):
-            Left_Distance += msg.ranges(Index)
+            Left_Distance += msg.ranges[Index]
 
         for Index in range(Left_Index -30, Left_Index + 31):
-            Right_Distance += msg.ranges(Index)
+            Right_Distance += msg.ranges[Index]
         
         for Index in range(0, Right_Index + 31):
-            Back_Distance += msg.ranges(Index)
+            Back_Distance += msg.ranges[Index]
 
         for Index in range(msg.ranges-30, msg):
-            Back_Distance += msg.ranges(Index)
+            Back_Distance += msg.ranges[Index]
         
         self.Head_Distance = Head_Distance / 71
         self.Right_Distance = Right_Distance / 71
