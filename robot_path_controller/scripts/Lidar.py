@@ -88,7 +88,7 @@ class Controller():
     def scan_callback(self,msg:LaserScan):
         self.Lidar_Handler.Convert_To_Sides_Distance(msg=msg)
         (a,b,c,d) = self.Lidar_Handler.Get_Distance()
-        print(a)
+        print(f"{a} ---- {b} ---- {c} ---- {d}")
 
 
 
