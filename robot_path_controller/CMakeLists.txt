@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   nav_msgs
   std_msgs
+  sensor_msgs
   message_generation
 )
 
@@ -113,6 +114,7 @@ catkin_install_python(PROGRAMS
   scripts/Commander.py 
   scripts/odometry_broadcaster.py 
   scripts/Communication.py 
+  scripts/Lidar.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
