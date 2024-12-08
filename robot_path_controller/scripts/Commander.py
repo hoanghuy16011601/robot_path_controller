@@ -312,6 +312,7 @@ class Controller():
     
 
     def __Calculate_PointMap_To_Choose_Pose_For_Movement(self, PenaltyMap:dict, Now_Position:tuple):
+        List_Free = []
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         X_Now = Now_Position[0]
@@ -350,11 +351,14 @@ class Controller():
 
                 Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
 
+                if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 16:
+                    List_Free.append((X_PointMap_For_Posible_Pose,Y_PointMap_For_Posible_Pose))
+                    
                 if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 35:
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 20 + Penalty_Point + Extra_point
                 else:
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
-        print(PointMap_For_Posible_Pose)
+        print(List_Free)
         return PointMap_For_Posible_Pose
     
     def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose):
