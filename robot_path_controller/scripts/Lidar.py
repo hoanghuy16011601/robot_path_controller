@@ -8,7 +8,6 @@ def scan_callback(msg):
     # Lấy giá trị khoảng cách của tia giữa
     mid_index = len(msg.ranges) // 2
     rospy.loginfo("Khoảng cách tia giữa: %.2f mét", msg.ranges[mid_index])
-    time.sleep(0.5)
     # Lấy toàn bộ giá trị khoảng cách (nếu cần)
     ranges = msg.ranges
 
