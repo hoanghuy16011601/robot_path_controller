@@ -528,8 +528,7 @@ class Controller():
             self.Finish_Flag = True
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
-        print(f"Now_Position {Now_Position}")
-        print(f"New_Position {New_Position}")
+        print(f"Now_Position {Now_Position} -- New_Position {New_Position} ---- Now_Angle {Now_Angle}--New_Angle {New_Angle}")
         List_Commands = self.Determine_Commands_For_Robot(Target_Angle=New_Angle,Now_Angle=Now_Angle)
         return List_Commands
 
@@ -545,6 +544,28 @@ class Main():
         self.List_Command = []
         self.Flag_Map = False
         self.Flag_Position = False
+
+    def __On_Task_Is_Done(self):
+        if len(self.List_Command) == 1:
+            self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
+        else:
+            pass
+        del self.List_Command[0]
+
+    def __Command_Robot(self):
+        if len(self.List_Command) ==0:
+            time.sleep(0.1)
+            self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
+            if len(self.List_Command) == 0:
+                self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
+            else:
+                pass
+        else: 
+            pass
+        if self.List_Command[0]["Type"] == "Finish":
+            print("Finish")
+        else:
+            self.__Send_Command_To_Robot(Command = self.List_Command[0])
 
     def __Send_Command_To_Robot(self, Command):
         self.Command_Message.type = Command["Type"]
@@ -568,43 +589,16 @@ class Main():
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
-
     def STM32_Message_Callback_Handler(self,Message):
         if Message.data == "Start":
-            while (self.Flag_Map == False):
+            while (self.Flag_Map == False or self.Flag_Position == False):
                 pass                                                ## Waiting for setup finish
-        elif Message.data == "Movement_Okay":
-            Last_Command = self.List_Command[0]
-            if Last_Command["Value"] == 20:
-                if len(self.List_Command) == 1:
-                    self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
-                else:
-                    pass
-            else:
-                pass
-            del self.List_Command[0]
-        elif Message.data == "Rotation_Okay":
-            if len(self.List_Command) > 1:
-                pass
-            else:
-                self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
-            del self.List_Command[0]
-        else:
-            pass # Error. Reserve 
+        elif Message.data == "Movement_Okay" and Message.data == "Rotation_Okay":
+            self.__On_Task_Is_Done()
+        else:   
+            pass # Reserve 
 
-        if len(self.List_Command) ==0:
-            time.sleep(0.1)
-            self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
-            if len(self.List_Command) == 0:
-                self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
-            else:
-                pass
-        else: 
-            pass
-        if self.List_Command[0]["Type"] == "Finish":
-            print("Finish")
-        else:
-            self.__Send_Command_To_Robot(Command = self.List_Command[0])
+        self.__Command_Robot()
         
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
