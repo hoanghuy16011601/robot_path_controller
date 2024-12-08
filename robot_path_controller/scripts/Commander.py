@@ -174,7 +174,7 @@ class Position():
         self.Target_Angle = 0
 
     
-    def __Convert_PenaltyMap_Position_To_SLAM_Pose(self, PenaltyMap_Position:tuple):
+    def Convert_PenaltyMap_Position_To_SLAM_Pose(self, PenaltyMap_Position:tuple):
         Position_X = PenaltyMap_Position[0]
         Position_y = PenaltyMap_Position[1]
 
@@ -452,7 +452,7 @@ class Controller():
 
     def __Get_Command_For_Control_Robot_Forward(self):
         Target_Position = self.Robot_Position.Get_Target_Position()
-        SLAM_Target_Pose = self.Robot_Position.__Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=Target_Position)
+        SLAM_Target_Pose = self.Robot_Position.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=Target_Position)
         SLAM_Now_Pose = self.Robot_Position.Get_SLAM_Now_Pose()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         if Now_Angle == 0 or Now_Angle == 180:      #X-Axis
