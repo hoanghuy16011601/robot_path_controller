@@ -23,10 +23,11 @@ def scan_callback(msg:LaserScan):
     left_index = len(msg.ranges) // 4
     right_index = len(msg.ranges)*3 //4
     back_index = 0
-    rospy.loginfo("Head_Distance: %.2f m", msg.ranges[head_index])
-    rospy.loginfo("Left_Distance: %.2f m", msg.ranges[left_index])
+    # rospy.loginfo("Head_Distance: %.2f m", msg.ranges[head_index])
+    # rospy.loginfo("Left_Distance: %.2f m", msg.ranges[left_index])
     rospy.loginfo("Back_Distance: %.2f m", msg.ranges[back_index])
-    rospy.loginfo("Right_Distance: %.2f m", msg.ranges[right_index])
+    # rospy.loginfo("Right_Distance: %.2f m", msg.ranges[right_index])
+    print("----------------------------------------------------")
     # Lấy toàn bộ giá trị khoảng cách (nếu cần)
     time.sleep(0.5)
 
