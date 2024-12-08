@@ -325,7 +325,7 @@ class Controller():
         else:
             Direction_Point = (0,1)
         PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
-
+        PointMap_For_Posible_Pose[X_Now][Y_Now] += 100000
         for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
             for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
                 Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose)  # prefer move in same X-Axis
