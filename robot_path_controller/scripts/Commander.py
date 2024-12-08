@@ -332,8 +332,15 @@ class Controller():
                 Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose) + abs(X_Now - X_PointMap_For_Posible_Pose)*0.03  # prefer move in same X-Axis
 
                 # Calculate Extra point base from direction of robot
-                X_Weight_Point = (X_PointMap_For_Posible_Pose - X_Now)/25 - 1
-                Y_Weight_Point = (Y_PointMap_For_Posible_Pose - Y_Now)/25 - 1
+                if X_PointMap_For_Posible_Pose > X_Now:
+                    X_Weight_Point =(X_PointMap_For_Posible_Pose - X_Now)/25 - 1
+                else:
+                    X_Weight_Point = 1 - (X_Now - X_PointMap_For_Posible_Pose)/25
+                
+                if Y_PointMap_For_Posible_Pose > Y_Now:
+                    Y_Weight_Point = (Y_PointMap_For_Posible_Pose - Y_Now)/25 - 1
+                else:
+                    Y_Weight_Point = 1 - (Y_Now - Y_PointMap_For_Posible_Pose)
 
 
                 Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
