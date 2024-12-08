@@ -21,7 +21,7 @@ class Lidar():
         Head_Index = Length_Message // 2
         Right_Index = Length_Message // 4
         Back_Index = 0
-        Left_Index = Length_Message*3 //4
+        Left_Index = (Length_Message*3) //4
         Head_Distance = 0
         Right_Distance = 0
         Back_Distance = 0
@@ -38,6 +38,7 @@ class Lidar():
             self.Head_Distance = Head_Distance/Count
 
         Count = 0
+
         for Index in range(Right_Index -40, Right_Index + 41):
             if math.isinf(msg.ranges[Index]) == False:
                 Right_Distance += msg.ranges[Index]
@@ -70,7 +71,7 @@ class Lidar():
             self.Back_Distance = 10
         else:
             self.Left_Distance = Back_Distance/Count
-    
+        print(Count)
 
 
 
