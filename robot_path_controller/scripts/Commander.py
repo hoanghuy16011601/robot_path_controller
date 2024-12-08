@@ -26,7 +26,7 @@ class Dijkstra():
             self.Grid_Planning_Information[Grid]["From"]   = ()
     
     def __Find_Lowest_Penalty_Of_Grid_Is_Not_Found(self,Target_Grid:tuple):
-        Min_Penalty = 1000000
+        Min_Penalty = 10000000
         Lowest_Grid = ()
         for Grid_Information in self.Grid_Planning_Information:
             if (self.Grid_Planning_Information[Grid_Information]["Status"] == "Finding"):
@@ -55,6 +55,7 @@ class Dijkstra():
 
     def __Update_Point_Of_Grid_Planning(self,Grid:tuple,Point:int):
         self.Grid_Planning_Information[Grid]["Point"]  = Point
+
     def __Get_Point_Of_Grid(self,Grid:tuple):
         Point:int = self.Grid_Planning_Information[Grid]["Point"]
         return Point
@@ -73,7 +74,8 @@ class Dijkstra():
                 Path_Planning.append(From_Grid)
                 From_Grid = self.__Get_From_Of_Grid(Grid = From_Grid)
         else:
-            print("Cannot find path of not found grid")
+            print("Cannot find path of found grid")
+            print(self.Grid_Planning_Information)
         Path_Planning = Path_Planning[::-1]
         return Path_Planning
 
@@ -369,6 +371,7 @@ class Controller():
                 return self.Robot_Position.Get_Start_Position(),True
         else:
             Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
+        print(f"Target Pose:{Target_Pose}")
         Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
         return Path[0], False
     
