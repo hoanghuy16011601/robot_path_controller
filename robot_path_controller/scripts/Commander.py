@@ -358,7 +358,6 @@ class Controller():
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 20 + Penalty_Point + Extra_point
                 else:
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
-        print(List_Free)
         return PointMap_For_Posible_Pose
     
     def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose):
