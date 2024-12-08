@@ -212,11 +212,11 @@ class Position():
         if self.Count_Check == 3:
             self.Count_Check = 0
             Now_Position = Check_Position
-            Is_Okay = True
+            Is_Checked = True
         else:
             Now_Position = self.Now_Position
-            Is_Okay = False
-        return Now_Position
+            Is_Checked = False
+        return Now_Position, Is_Checked
     
     def Calculate_Distance_In_SLAM(self, From_Pose:tuple , To_Pose:tuple , Axis:str):
         if Axis == "X":
