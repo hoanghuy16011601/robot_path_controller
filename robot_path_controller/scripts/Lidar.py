@@ -16,10 +16,11 @@ class Lidar():
         return (self.Head_Distance ,self.Right_Distance ,self.Back_Distance ,self.Left_Distance )
     
     def Convert_To_Sides_Distance(self,msg:LaserScan):
-        Head_Index = len(msg.ranges) // 2
-        Right_Index = len(msg.ranges) // 4
+        Length_Message = len(msg.ranges)
+        Head_Index = Length_Message // 2
+        Right_Index = Length_Message // 4
         Back_Index = 0
-        Left_Index = len(msg.ranges)*3 //4
+        Left_Index = Length_Message*3 //4
         Head_Distance = 0
         Right_Distance = 0
         Back_Distance = 0
@@ -34,10 +35,10 @@ class Lidar():
         for Index in range(Left_Index -30, Left_Index + 31):
             Right_Distance += msg.ranges[Index]
         
-        for Index in range(0, Right_Index + 31):
+        for Index in range(Back_Index, Right_Index + 31):
             Back_Distance += msg.ranges[Index]
 
-        for Index in range(msg.ranges-30, msg.ranges):
+        for Index in range(Length_Message-30, Length_Message):
             Back_Distance += msg.ranges[Index]
         
         self.Head_Distance = Head_Distance / 71
