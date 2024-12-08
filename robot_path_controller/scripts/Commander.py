@@ -617,17 +617,15 @@ class Main():
     def __On_Task_Is_Done(self):
         if len(self.List_Command) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
-            self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
-            self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
         else:
             pass
         del self.List_Command[0]
 
     def __Command_Robot(self):
         if len(self.List_Command) ==0:
-            time.sleep(0.1)
             self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Command) == 0:
+                time.sleep(0.5)
                 self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
                 pass
