@@ -70,7 +70,7 @@ class Lidar():
         if Count == 0:
             self.Back_Distance = 10
         else:
-            self.Left_Distance = Back_Distance/Count
+            self.Back_Distance = Back_Distance/Count
         print(Count)
 
 
