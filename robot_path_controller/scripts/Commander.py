@@ -212,8 +212,10 @@ class Position():
         if self.Count_Check == 3:
             self.Count_Check = 0
             Now_Position = Check_Position
+            Is_Okay = True
         else:
             Now_Position = self.Now_Position
+            Is_Okay = False
         return Now_Position
     
     def Calculate_Distance_In_SLAM(self, From_Pose:tuple , To_Pose:tuple , Axis:str):
@@ -639,10 +641,11 @@ class Main():
         Angle_Z = msg.pose.orientation.z
         Angle_W = msg.pose.orientation.w
 
-        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
+        Now_Position,Is_Checked = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
         SLAM_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_SLAM_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
 
-        self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Pose(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
+        if Is_Checked:
+            self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Pose(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
