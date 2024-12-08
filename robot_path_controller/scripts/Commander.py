@@ -337,7 +337,7 @@ class Controller():
                 
         return PointMap_For_Posible_Pose
     
-    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position, Now_Angle):
+    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Point_Of_New_Pose = 10000
         for X_Check in range(0,Length_Axis):
