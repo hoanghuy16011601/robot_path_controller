@@ -110,6 +110,7 @@ class Dijkstra():
             Grid_State_End = self.__Find_Lowest_Penalty_Of_Grid_Is_Not_Found(Target_Grid=End_Grid)
             self.__Update_Status_Of_Grid_Planning(Grid=Grid_State_End,Status="Found")
         Path_Planning = self.__Find_Path_Of_Found_Grid(Found_Grid=Grid_State_End)
+        print(Path_Planning)
         return Path_Planning
 
 
@@ -331,8 +332,8 @@ class Controller():
                 Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose) + abs(X_Now - X_PointMap_For_Posible_Pose)*0.03  # prefer move in same X-Axis
 
                 # Calculate Extra point base from direction of robot
-                X_Weight_Point = 1 - (X_PointMap_For_Posible_Pose - X_Now)/25
-                Y_Weight_Point = 1 - (Y_PointMap_For_Posible_Pose - Y_Now)/25
+                X_Weight_Point = (X_PointMap_For_Posible_Pose - X_Now)/25 - 1
+                Y_Weight_Point = (Y_PointMap_For_Posible_Pose - Y_Now)/25 - 1
 
 
                 Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
