@@ -462,12 +462,12 @@ class Controller():
                     List_Free.append((X_PointMap_For_Posible_Pose,Y_PointMap_For_Posible_Pose))
                     
                 if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 35:
-                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 20 + Penalty_Point + Extra_point
+                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 50 + Penalty_Point + Extra_point
                 else:
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
         return PointMap_For_Posible_Pose
     
-    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose):
+    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Point_Of_New_Pose = 10000
         for X_Check in range(0,Length_Axis):
@@ -476,15 +476,16 @@ class Controller():
                 if Point_Of_Checking_Pose < Point_Of_New_Pose:
                     New_Pose = (X_Check,Y_Check)
                     Point_Of_New_Pose = Point_Of_Checking_Pose 
-                else:
-                    pass
+                elif Point_Of_Checking_Pose == Point_Of_New_Pose : 
+                    if (abs(X_Check - Now_Position[0]) + abs(Y_Check - Now_Position[1])) < (abs(New_Pose[0] - Now_Position[0]) + abs(New_Pose[1] - Now_Position[1])):
+                        New_Pose = (X_Check,Y_Check)
         return New_Pose
 
     def __Determine_Possible_NewPosition_To_Move(self):
         Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
         Position = self.Robot_Position.Get_Now_Position()
         PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
-        New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose)
+        New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose, Now_Position= Position)
         return New_Pose
     
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
