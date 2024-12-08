@@ -593,7 +593,7 @@ class Main():
         if Message.data == "Start":
             while (self.Flag_Map == False or self.Flag_Position == False):
                 pass                                                ## Waiting for setup finish
-        elif Message.data == "Movement_Okay" and Message.data == "Rotation_Okay":
+        elif Message.data == "Movement_Okay" or Message.data == "Rotation_Okay":
             self.__On_Task_Is_Done()
         else:   
             pass # Reserve 
