@@ -22,55 +22,35 @@ class Lidar():
         Right_Index = Length_Message // 4
         Back_Index = 0
         Left_Index = (Length_Message*3) //4
-        Head_Distance = 0
-        Right_Distance = 0
-        Back_Distance = 0
-        Left_Distance =0
+        Head_Distance = 10
+        Right_Distance = 10
+        Back_Distance = 10
+        Left_Distance =10
         
-        Count = 0
-        for Index in range(Head_Index-10,Head_Index + 10):
-            if math.isinf(msg.ranges[Index]) == False:
-                Head_Distance += msg.ranges[Index]
-                Count +=1 
-        if Count == 0:
-            self.Head_Distance = 10
-        else:
-            self.Head_Distance = Head_Distance/Count
+        for Index in range(Head_Index-15,Head_Index + 15):
+            if msg.ranges(Index) < Head_Distance:
+                Head_Distance = msg.ranges(Index)
 
-        Count = 0
+        for Index in range(Right_Index -15, Right_Index + 15):
+            if msg.ranges(Index) < Right_Distance:
+                Right_Distance = msg.ranges(Index)
 
-        for Index in range(Right_Index -10, Right_Index + 10):
-            if math.isinf(msg.ranges[Index]) == False:
-                Right_Distance += msg.ranges[Index]
-                Count +=1 
-        if Count == 0:
-            self.Right_Distance = 10
-        else:
-            self.Right_Distance = Right_Distance/Count
-
-        Count = 0
-        for Index in range(Left_Index -10, Left_Index + 10):
-            if math.isinf(msg.ranges[Index]) == False:
-                Left_Distance += msg.ranges[Index]
-                Count +=1 
-        if Count == 0:
-            self.Left_Distance = 10
-        else:
-            self.Left_Distance = Left_Distance/Count
+        for Index in range(Left_Index -15, Left_Index + 15):
+            if msg.ranges(Index) < Left_Distance:
+                Left_Distance = msg.ranges(Index)
         
-        Count = 0
         for Index in range(Back_Index, Back_Index + 10):
-            if math.isinf(msg.ranges[Index]) == False:
-                Back_Distance += msg.ranges[Index]
-                Count +=1 
+            if msg.ranges(Index) < Back_Distance:
+                Back_Distance = msg.ranges(Index)
+
         for Index in range(Length_Message-10, Length_Message):
-            if math.isinf(msg.ranges[Index]) == False:
-                Back_Distance += msg.ranges[Index]
-                Count +=1 
-        if Count == 0:
-            self.Back_Distance = 10
-        else:
-            self.Back_Distance = Back_Distance/Count
+            if msg.ranges(Index) < Back_Distance:
+                Back_Distance = msg.ranges(Index)
+        
+        self.Head_Distance = Head_Distance
+        self.Right_Distance = Right_Distance
+        self.Back_Distance = Back_Distance
+        self.Left_Distance = Left_Distance
 
 
 
