@@ -597,7 +597,7 @@ class Controller():
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
 
-        print(f"Now_Position {Now_Position} -- New_Position {New_Position} ---- Now_Angle {Now_Angle}--New_Angle {New_Angle}")
+        print(f"New_Position {New_Position} ---- New_Angle {New_Angle}")
         List_Commands = self.Determine_Commands_For_Robot(Target_Angle=New_Angle,Now_Angle=Now_Angle)
         return List_Commands
 
