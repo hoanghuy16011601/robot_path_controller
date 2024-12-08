@@ -28,6 +28,7 @@ class Dijkstra():
     def __Find_Lowest_Penalty_Of_Grid_Is_Not_Found(self,Target_Grid:tuple):
         Min_Penalty = 10000000
         Lowest_Grid = ()
+        print(self.Grid_Planning_Information)
         for Grid_Information in self.Grid_Planning_Information:
             if (self.Grid_Planning_Information[Grid_Information]["Status"] == "Finding"):
                 if self.Grid_Planning_Information[Grid_Information]["Point"] < Min_Penalty:
@@ -368,7 +369,6 @@ class Controller():
         Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
         Position = self.Robot_Position.Get_Now_Position()
         PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
-        print(PointMap_For_Posible_Pose)
         New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose)
         return New_Pose
     
