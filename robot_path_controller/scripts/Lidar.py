@@ -6,40 +6,64 @@ import time
 
 class Lidar():
     def __init__(self):
+        self.Angle_Increment = 0.47368  # degrees
         self.Head_Distance = 1000
         self.Back_Distance = 1000
         self.Left_Distance = 1000
         self.Right_Distance = 1000
 
     def Get_Distance(self):
-        return (self.Head_Distance ,self.Back_Distance ,self.Left_Distance ,self.Right_Distance)
+        return (self.Head_Distance ,self.Right_Distance ,self.Back_Distance ,self.Left_Distance )
     
-    def Convert_To_Algorithm_Distance(Ranges):
-        print("test")
-        # Get Head
-def scan_callback(msg:LaserScan):
-    # Lấy giá trị khoảng cách của tia giữa
-    head_index = len(msg.ranges) // 2
-    left_index = len(msg.ranges) // 4
-    right_index = len(msg.ranges)*3 //4
-    back_index = 0
-    # rospy.loginfo("Head_Distance: %.2f m", msg.ranges[head_index])
-    rospy.loginfo("Left_Distance: %.2f m", msg.ranges[left_index])
-    # rospy.loginfo("Back_Distance: %.2f m", msg.ranges[back_index])
-    # rospy.loginfo("Right_Distance: %.2f m", msg.ranges[right_index])
-    print("----------------------------------------------------")
-    # Lấy toàn bộ giá trị khoảng cách (nếu cần)
-    # time.sleep(0.5)
+    def Convert_To_Sides_Distance(self,msg:LaserScan):
+        Head_Index = len(msg.ranges) // 2
+        Right_Index = len(msg.ranges) // 4
+        Back_Index = 0
+        Left_Index = len(msg.ranges)*3 //4
+        Head_Distance = 0
+        Right_Distance = 0
+        Back_Distance = 0
+        Left_Distance =0
+        
+        for Index in range(Head_Index-30,Head_Index + 31):
+            Head_Distance += msg.ranges[Index]
+        
+        for Index in range(Right_Index -30, Right_Index + 31):
+            Left_Distance += msg.ranges(Index)
 
-def main():
-    # Khởi tạo ROS node
-    rospy.init_node('scan_listener', anonymous=True)
+        for Index in range(Left_Index -30, Left_Index + 31):
+            Right_Distance += msg.ranges(Index)
+        
+        for Index in range(0, Right_Index + 31):
+            Back_Distance += msg.ranges(Index)
 
-    # Tạo subscriber lắng nghe topic /scan
-    rospy.Subscriber('/scan', LaserScan, scan_callback)
+        for Index in range(msg.ranges-30, msg):
+            Back_Distance += msg.ranges(Index)
+        
+        self.Head_Distance = Head_Distance / 71
+        self.Right_Distance = Right_Distance / 71
+        self.Back_Distance = Back_Distance / 71
+        self.Left_Distance = Left_Distance / 71
 
-    # Duy trì node hoạt động
-    rospy.spin()
+
+
+class Controller():
+    def __init__(self):
+        self.Lidar_Handler = Lidar()
+        rospy.init_node('scan_listener', anonymous=True)
+
+        # Tạo subscriber lắng nghe topic /scan
+        rospy.Subscriber('/scan', LaserScan, self.scan_callback)
+
+        # Duy trì node hoạt động
+        rospy.spin()
+
+    def scan_callback(self,msg:LaserScan):
+        self.Lidar_Handler.Convert_To_Sides_Distance(msg=msg)
+        (a,b,c,d) = self.Lidar_Handler.Get_Distance()
+        print(a)
+
+
 
 if __name__ == '__main__':
-    main()
+    Controller()
