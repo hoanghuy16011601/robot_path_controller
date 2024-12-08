@@ -459,7 +459,7 @@ class Controller():
             Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "X",From_Pose=SLAM_Now_Pose,To_Pose = SLAM_Target_Pose)
         else:                                       #Y-Axis
             Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "Y",From_Pose=SLAM_Now_Pose,To_Pose = SLAM_Target_Pose)
-        Distance *= 10                              # Convert meters to centimeters
+        Distance *= 100                              # Convert meters to centimeters
         Command = {
             "Type"  : "Forward",
             "Value" : Distance
