@@ -166,6 +166,7 @@ class Position():
         self.Passed_Positions = [self.Start_Position]
         self.Now_Position = (self.Start_Position)
         self.Last_Position = self.Start_Position
+        self.SLAM_Now_Pose = () 
         self.SLAM_Now_Angle = 0
         self.Target_Position = ()
         self.Count_Check = 0
@@ -173,7 +174,16 @@ class Position():
         self.Target_Angle = 0
 
     
-    def __Convert_SLAM_Pose_To_Our_Position(self,SLAM_Pose:tuple):
+    def __Convert_PenaltyMap_Position_To_SLAM_Pose(self, PenaltyMap_Position:tuple):
+        Position_X = PenaltyMap_Position[0]
+        Position_y = PenaltyMap_Position[1]
+
+        SLAM_Pose_X = (Position_X - 12)*0.4
+        SLAM_Pose_Y = (Position_y - 12)*0.4
+
+        return (SLAM_Pose_X,SLAM_Pose_Y)
+    
+    def __Convert_SLAM_Pose_To_PenaltyMap_Position(self,SLAM_Pose:tuple):
         SLAM_Pose_X = SLAM_Pose[0]
         SLAM_Pose_Y = SLAM_Pose[1]
 
@@ -190,7 +200,7 @@ class Position():
         return (Position_X,Position_Y)
 
     def Determine_Now_Position(self,SLAM_Pose:tuple):
-        Check_Position = self.__Convert_SLAM_Pose_To_Our_Position(SLAM_Pose=SLAM_Pose)
+        Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(SLAM_Pose=SLAM_Pose)
 
         if Check_Position == self.Last_Position:
             self.Count_Check +=1
@@ -206,6 +216,16 @@ class Position():
             Now_Position = self.Now_Position
         return Now_Position
     
+    def Calculate_Distance_In_SLAM(self, From_Pose:tuple , To_Pose:tuple , Axis:str):
+        if Axis == "X":
+            Distance = To_Pose[0] - From_Pose[0]
+        elif Axis == "Y":
+            Distance = To_Pose[1] - From_Pose[1]
+        else:
+            Distance = 0
+
+        return abs(Distance)
+
     def Determine_SLAM_Now_Angle(self,Angle_Z, Angle_W):
         Theta_Angle = 2*math.atan2(Angle_Z,Angle_W)
         Degrees_Angle = math.degrees(Theta_Angle)
@@ -223,6 +243,12 @@ class Position():
     
     def Update_Now_Position(self,Position):
         self.Now_Position = Position
+
+    def Get_SLAM_Now_Pose(self):
+        return self.SLAM_Now_Pose
+
+    def Update_SLAM_Now_Pose(self,SLAM_Pose:tuple):
+        self.SLAM_Now_Pose = SLAM_Pose
 
     def Update_SLAM_Now_Angle(self,Degrees_Value):
         self.SLAM_Now_Angle = Degrees_Value
@@ -280,59 +306,61 @@ class Controller():
             Is_Cover_Full_Map = True
         return Is_Cover_Full_Map
         
-    def __Determine_Possible_NewPosition_To_Move(self):
+    def __Calculate_PointMap_To_Choose_Pose_For_Movement(self, PenaltyMap:dict, Now_Position:tuple):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
-        Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-        Position = self.Robot_Position.Get_Now_Position()
-        X_Now = Position[0]
-        Y_Now = Position[1]
-        New_Pose = ()
-        Penalty_Point_Of_New_Pose = 1000000
-        Free_Positions = []
+        Now_Angle = self.Robot_Position.Get_Now_Angle()
+        X_Now = Now_Position[0]
+        Y_Now = Now_Position[1]
         ## Create penalty map for possible position finding, too far to X_Now (in X-Axis) too more penalty point 
-        Penalty_Map_For_Possible_Pose = copy.deepcopy(Penalty_Map)
-        for X_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
-            for Y_Penalty_Map_For_Possible_Pose in range(0,Length_Axis):
-                Penalty_Point = abs(Y_Now - Y_Penalty_Map_For_Possible_Pose)
-                if Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] == 16:
-                    Free_Positions.append((X_Penalty_Map_For_Possible_Pose,Y_Penalty_Map_For_Possible_Pose))
-                if Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] == 35:
-                    Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += 20
+        if Now_Angle == 0:
+            Direction_Point = (1,0)
+        elif Now_Angle == 180:
+            Direction_Point = (-1,0)
+        elif Now_Angle == 90:
+            Direction_Point = (0,1)
+        else:
+            Direction_Point = (0,-1)
+        PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
+
+        for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
+            for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
+                Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose)  # prefer move in same X-Axis
+
+                X_Weight_Point = 0-(X_PointMap_For_Posible_Pose - X_Now)/24
+                Y_Weight_Point = 0-(Y_PointMap_For_Posible_Pose - Y_Now)/24
+                Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
+
+                if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 35:
+                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 20 + Penalty_Point + Extra_point
                 else:
-                    Penalty_Map_For_Possible_Pose[X_Penalty_Map_For_Possible_Pose][Y_Penalty_Map_For_Possible_Pose] += Penalty_Point
-        print(f"List Free Positions {Free_Positions}")
-        ## Finding the pose have smallest penalty point
+                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
+                
+        return PointMap_For_Posible_Pose
+    
+    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position, Now_Angle):
+        Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
+        Point_Of_New_Pose = 10000
         for X_Check in range(0,Length_Axis):
             for Y_Check in range(0,Length_Axis):
-                if (X_Check != X_Now) or (Y_Check != Y_Now):
-                    if Penalty_Map_For_Possible_Pose[X_Check][Y_Check] < Penalty_Point_Of_New_Pose:
-                        New_Pose = (X_Check,Y_Check)
-                        Penalty_Point_Of_New_Pose = Penalty_Map_For_Possible_Pose[X_Check][Y_Check]
-                    elif Penalty_Map_For_Possible_Pose[X_Check][Y_Check] == Penalty_Point_Of_New_Pose:
-                        if New_Pose[0] < 12:
-                            if (X_Check > New_Pose[0]):
-                                New_Pose = (X_Check,Y_Check)
-                        else:
-                            if (X_Check < New_Pose[0] and X_Check > 12):
-                                New_Pose = (X_Check,Y_Check)
-                            elif (X_Check == New_Pose[0]):
-                                if (Y_Check < New_Pose[1] and Y_Check > 12):
-                                    New_Pose = (X_Check,Y_Check)
-                                else:
-                                    pass
-                            else:
-                                pass
-                    else:
-                        pass
+                Point_Of_Checking_Pose = PointMap_For_Posible_Pose[X_Check][Y_Check]
+                if Point_Of_Checking_Pose < Point_Of_New_Pose:
+                    New_Pose = (X_Check,Y_Check)
+                    Point_Of_New_Pose = Point_Of_Checking_Pose 
                 else:
                     pass
+        return New_Pose
+
+    def __Determine_Possible_NewPosition_To_Move(self):
+        Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
+        Position = self.Robot_Position.Get_Now_Position()
+        PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
+        New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose)
         return New_Pose
     
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
         Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
         if Reponse == True:
             print("Robot has covered full map")
-            
             if Now_Position != self.Robot_Position.Get_Start_Position():
                 Target_Pose = self.Robot_Position.Get_Start_Position()
             else:
@@ -421,6 +449,24 @@ class Controller():
         Left_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Left_Pose)
         Back_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Back_Pose)
         return Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty
+
+    def __Get_Command_For_Control_Robot_Forward(self):
+        Target_Position = self.Robot_Position.Get_Target_Position()
+        SLAM_Target_Pose = self.Robot_Position.__Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=Target_Position)
+        SLAM_Now_Pose = self.Robot_Position.Get_SLAM_Now_Pose()
+        Now_Angle = self.Robot_Position.Get_Now_Angle()
+        if Now_Angle == 0 or Now_Angle == 180:      #X-Axis
+            Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "X",From_Pose=SLAM_Now_Pose,Target_Position = SLAM_Target_Pose)
+        else:                                       #Y-Axis
+            Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "Y",From_Pose=SLAM_Now_Pose,Target_Position = SLAM_Target_Pose)
+        Distance *= 10                              # Convert meters to centimeters
+        Command = {
+            "Type"  : "Forward",
+            "Value" : Distance
+        }
+        
+        return Command
+
     def __Determine_Back_Solution(self):
         List_Commands = []
         Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty = self.__Determine_Penalty_Point_Of_Around_Position()
@@ -476,10 +522,11 @@ class Controller():
                 Command["Type"] = "Finish"
             else:
                 Command["Type"] = "Forward"
-                Command["Value"] = 40
+
         elif abs(Target_Angle - Now_Angle) == 180:
             Command["Type"] = "Back_Movement"
             Command["Value"] = 180
+
         else:                                   # Not same direction so must be rotate first
             if Target_Angle == 0:
                 Target_Angle = 360
@@ -504,19 +551,20 @@ class Controller():
         
 
         if Command["Type"] == "Forward":
-            List_Commands.append(Command)
+            List_Commands.append(self.__Get_Command_For_Control_Robot_Forward())
         
         elif Command["Type"] == "Back_Movement":
             List_Commands = self.__Determine_Back_Solution()
+
         else:
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 15
+                "Value" : 20
             })
             List_Commands.append(Command)
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 15
+                "Value" : 20
             })
         return List_Commands
     
@@ -524,14 +572,17 @@ class Controller():
         Now_Position = self.Robot_Position.Get_Now_Position()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         Now_Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
+
         New_Position,Was_Back_To_Start = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
         if Was_Back_To_Start == False:
             New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
         else:
             New_Angle = 0
             self.Finish_Flag = True
+
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
+
         print(f"Now_Position {Now_Position} -- New_Position {New_Position} ---- Now_Angle {Now_Angle}--New_Angle {New_Angle}")
         List_Commands = self.Determine_Commands_For_Robot(Target_Angle=New_Angle,Now_Angle=Now_Angle)
         return List_Commands
@@ -583,12 +634,15 @@ class Main():
 
     def Position_Callback_Handler(self,msg:PoseStamped):
         self.Flag_Position = True
-        Position_X = msg.pose.position.x
-        Position_Y = msg.pose.position.y
+        SLAM_Position_X = msg.pose.position.x
+        SLAM_Position_Y = msg.pose.position.y
         Angle_Z = msg.pose.orientation.z
         Angle_W = msg.pose.orientation.w
-        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(Position_X,Position_Y))
+
+        Now_Position = self.Algorithm_Controller.Robot_Position.Determine_Now_Position(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
         SLAM_Now_Angle = self.Algorithm_Controller.Robot_Position.Determine_SLAM_Now_Angle(Angle_Z=Angle_Z,Angle_W=Angle_W)
+
+        self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Pose(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
