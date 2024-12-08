@@ -309,7 +309,8 @@ class Controller():
         else:
             Is_Cover_Full_Map = True
         return Is_Cover_Full_Map
-        
+    
+
     def __Calculate_PointMap_To_Choose_Pose_For_Movement(self, PenaltyMap:dict, Now_Position:tuple):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
@@ -330,8 +331,17 @@ class Controller():
             for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
                 Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose)  # prefer move in same X-Axis
 
-                X_Weight_Point = 0-(X_PointMap_For_Posible_Pose - X_Now)/24
-                Y_Weight_Point = 0-(Y_PointMap_For_Posible_Pose - Y_Now)/24
+                # Calculate Extra point base from direction of robot
+                if(X_PointMap_For_Posible_Pose > X_Now):
+                    X_Weight_Point = (X_PointMap_For_Posible_Pose - X_Now)/25 - 1
+                else:
+                    X_Weight_Point = (X_Now - X_PointMap_For_Posible_Pose)/25
+                
+                if(Y_PointMap_For_Posible_Pose > Y_Now):
+                    Y_Weight_Point = (Y_PointMap_For_Posible_Pose - Y_Now)/25 - 1
+                else:
+                    Y_Weight_Point = (Y_Now - Y_PointMap_For_Posible_Pose)/25
+
                 Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
 
                 if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 35:
@@ -358,6 +368,7 @@ class Controller():
         Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
         Position = self.Robot_Position.Get_Now_Position()
         PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
+        print(PointMap_For_Posible_Pose)
         New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose)
         return New_Pose
     
