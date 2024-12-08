@@ -26,9 +26,8 @@ class Dijkstra():
             self.Grid_Planning_Information[Grid]["From"]   = ()
     
     def __Find_Lowest_Penalty_Of_Grid_Is_Not_Found(self,Target_Grid:tuple):
-        Min_Penalty = 10000000
+        Min_Penalty = 1000000000
         Lowest_Grid = ()
-        print(self.Grid_Planning_Information)
         for Grid_Information in self.Grid_Planning_Information:
             if (self.Grid_Planning_Information[Grid_Information]["Status"] == "Finding"):
                 if self.Grid_Planning_Information[Grid_Information]["Point"] < Min_Penalty:
