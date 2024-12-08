@@ -35,7 +35,7 @@ class STM32_Message_Controller():
             Data = f"{Command_Type}/{Command_Value}\0"
         else:
             pass
-        print(Data)
+        # print(Data)
         self.Serial.write(Data.encode("utf-8"))
 
     def Ros_Subcribe(self):
