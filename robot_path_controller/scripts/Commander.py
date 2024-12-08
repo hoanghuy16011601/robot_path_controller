@@ -75,7 +75,6 @@ class Dijkstra():
                 From_Grid = self.__Get_From_Of_Grid(Grid = From_Grid)
         else:
             print("Cannot find path of found grid")
-            print(self.Grid_Planning_Information)
         Path_Planning = Path_Planning[::-1]
         return Path_Planning
 
@@ -587,7 +586,7 @@ class Controller():
         Now_Position = self.Robot_Position.Get_Now_Position()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         Now_Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-
+        print(f"Now_Position {Now_Position} ---- Now_Angle {Now_Angle}")
         New_Position,Was_Back_To_Start = self.Determine_New_Position_For_Robot(Now_Position=Now_Position,Now_Penalty_Map=Now_Penalty_Map)
         if Was_Back_To_Start == False:
             New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
@@ -618,6 +617,8 @@ class Main():
     def __On_Task_Is_Done(self):
         if len(self.List_Command) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
+            self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
+            self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
         else:
             pass
         del self.List_Command[0]
