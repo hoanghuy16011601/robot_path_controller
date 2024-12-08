@@ -309,15 +309,19 @@ class Controller():
                         New_Pose = (X_Check,Y_Check)
                         Penalty_Point_Of_New_Pose = Penalty_Map_For_Possible_Pose[X_Check][Y_Check]
                     elif Penalty_Map_For_Possible_Pose[X_Check][Y_Check] == Penalty_Point_Of_New_Pose:
-                        if (X_Check < New_Pose[0] and X_Check > 12):
-                            New_Pose = (X_Check,Y_Check)
-                        elif (X_Check == New_Pose[0]):
-                            if (Y_Check < New_Pose[1] and Y_Check > 12):
+                        if New_Pose[0] < 12:
+                            if (X_Check > New_Pose[0]):
                                 New_Pose = (X_Check,Y_Check)
+                        else:
+                            if (X_Check < New_Pose[0] and X_Check > 12):
+                                New_Pose = (X_Check,Y_Check)
+                            elif (X_Check == New_Pose[0]):
+                                if (Y_Check < New_Pose[1] and Y_Check > 12):
+                                    New_Pose = (X_Check,Y_Check)
+                                else:
+                                    pass
                             else:
                                 pass
-                        else:
-                            pass
                     else:
                         pass
                 else:
