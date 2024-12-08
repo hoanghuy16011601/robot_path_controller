@@ -319,9 +319,9 @@ class Controller():
         elif Now_Angle == 180:
             Direction_Point = (-1,0)
         elif Now_Angle == 90:
-            Direction_Point = (0,1)
-        else:
             Direction_Point = (0,-1)
+        else:
+            Direction_Point = (0,1)
         PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
 
         for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
