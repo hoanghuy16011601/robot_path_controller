@@ -27,23 +27,23 @@ class Lidar():
         Back_Distance = 10
         Left_Distance =10
         
-        for Index in range(Head_Index-15,Head_Index + 15):
+        for Index in range(Head_Index-30,Head_Index + 30):
             if msg.ranges[Index] < Head_Distance:
                 Head_Distance = msg.ranges[Index]
 
-        for Index in range(Right_Index -15, Right_Index + 15):
+        for Index in range(Right_Index -30, Right_Index + 30):
             if msg.ranges[Index] < Right_Distance:
                 Right_Distance = msg.ranges[Index]
 
-        for Index in range(Left_Index -15, Left_Index + 15):
+        for Index in range(Left_Index -30, Left_Index + 30):
             if msg.ranges[Index] < Left_Distance:
                 Left_Distance = msg.ranges[Index]
         
-        for Index in range(Back_Index, Back_Index + 15):
+        for Index in range(Back_Index, Back_Index + 30):
             if msg.ranges[Index] < Back_Distance:
                 Back_Distance = msg.ranges[Index]
 
-        for Index in range(Length_Message-15, Length_Message):
+        for Index in range(Length_Message-30, Length_Message):
             if msg.ranges[Index] < Back_Distance:
                 Back_Distance = msg.ranges[Index]
         
