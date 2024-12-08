@@ -28,7 +28,7 @@ class Lidar():
         Left_Distance =0
         
         Count = 0
-        for Index in range(Head_Index-40,Head_Index + 41):
+        for Index in range(Head_Index-10,Head_Index + 10):
             if math.isinf(msg.ranges[Index]) == False:
                 Head_Distance += msg.ranges[Index]
                 Count +=1 
@@ -39,7 +39,7 @@ class Lidar():
 
         Count = 0
 
-        for Index in range(Right_Index -40, Right_Index + 41):
+        for Index in range(Right_Index -10, Right_Index + 10):
             if math.isinf(msg.ranges[Index]) == False:
                 Right_Distance += msg.ranges[Index]
                 Count +=1 
@@ -49,7 +49,7 @@ class Lidar():
             self.Right_Distance = Right_Distance/Count
 
         Count = 0
-        for Index in range(Left_Index -40, Left_Index + 41):
+        for Index in range(Left_Index -10, Left_Index + 10):
             if math.isinf(msg.ranges[Index]) == False:
                 Left_Distance += msg.ranges[Index]
                 Count +=1 
@@ -59,11 +59,11 @@ class Lidar():
             self.Left_Distance = Left_Distance/Count
         
         Count = 0
-        for Index in range(Back_Index, Back_Index + 41):
+        for Index in range(Back_Index, Back_Index + 10):
             if math.isinf(msg.ranges[Index]) == False:
                 Back_Distance += msg.ranges[Index]
                 Count +=1 
-        for Index in range(Length_Message-40, Length_Message):
+        for Index in range(Length_Message-10, Length_Message):
             if math.isinf(msg.ranges[Index]) == False:
                 Back_Distance += msg.ranges[Index]
                 Count +=1 
