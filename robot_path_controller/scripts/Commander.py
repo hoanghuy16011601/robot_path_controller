@@ -456,9 +456,9 @@ class Controller():
         SLAM_Now_Pose = self.Robot_Position.Get_SLAM_Now_Pose()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         if Now_Angle == 0 or Now_Angle == 180:      #X-Axis
-            Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "X",From_Pose=SLAM_Now_Pose,Target_Position = SLAM_Target_Pose)
+            Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "X",From_Pose=SLAM_Now_Pose,To_Pose = SLAM_Target_Pose)
         else:                                       #Y-Axis
-            Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "Y",From_Pose=SLAM_Now_Pose,Target_Position = SLAM_Target_Pose)
+            Distance = self.Robot_Position.Calculate_Distance_In_SLAM(Axis= "Y",From_Pose=SLAM_Now_Pose,To_Pose = SLAM_Target_Pose)
         Distance *= 10                              # Convert meters to centimeters
         Command = {
             "Type"  : "Forward",
