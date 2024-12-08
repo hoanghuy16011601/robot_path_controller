@@ -639,7 +639,7 @@ class Controller():
                 List_Commands.append(self.__Get_Command_For_Control_Robot_Forward())
 
         elif abs(Target_Angle - Now_Angle) == 180:
-            List_Commands.append(self.__Get_Commands_For_Control_Robot_Rotate_BackSide())
+            List_Commands = self.__Get_Commands_For_Control_Robot_Rotate_BackSide()
             if List_Commands[0]["Type"] == "Backward":
                 self.Robot_Position.Update_Target_Angle(Angle=Now_Angle)
 
