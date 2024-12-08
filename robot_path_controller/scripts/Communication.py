@@ -33,6 +33,8 @@ class STM32_Message_Controller():
             Data = f"{Command_Type}/{Command_Value}\0"
         elif (Command_Type == "Rotate-Right" or Command_Type == "Rotate-Left"):
             Data = f"{Command_Type}/{Command_Value}\0"
+        elif (Command_Type == "Stop"):
+            Data = f"{Command_Type}\0"
         else:
             pass
         # print(Data)

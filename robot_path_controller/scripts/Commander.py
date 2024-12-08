@@ -5,6 +5,7 @@ import copy
 from std_msgs.msg import String 
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import LaserScan
 from robot_path_controller.msg import Command
 import time
 
@@ -114,6 +115,96 @@ class Dijkstra():
         return Path_Planning
 
 
+class Lidar():
+    def __init__(self):
+        self.Angle_Increment = 0.47368  # degrees
+        self.Head_Distance = 10
+        self.Head_Count_Check = 0
+        self.Last_Head_Distance = 0
+
+        self.Right_Distance = 10
+        self.Right_Count_Check = 0
+        self.Last_Right_Distance = 0
+        
+        self.Back_Distance = 10
+        self.Back_Count_Check = 0
+        self.Last_Back_Distance = 0
+
+        self.Left_Distance = 10
+        self.Left_Count_Check = 0
+        self.Last_Left_Distance = 0
+
+    def Get_Distances(self):
+        return (self.Head_Distance ,self.Right_Distance ,self.Back_Distance ,self.Left_Distance )
+    
+    def Convert_To_Sides_Distance(self,msg:LaserScan):
+        Length_Message = len(msg.ranges)
+        Head_Index = Length_Message // 2
+        Right_Index = Length_Message // 4
+        Back_Index = 0
+        Left_Index = (Length_Message*3) //4
+        Head_Distance = 10
+        Right_Distance = 10
+        Back_Distance = 10
+        Left_Distance =10
+        
+        for Index in range(Head_Index-50,Head_Index + 50):
+            if msg.ranges[Index] < Head_Distance:
+                Head_Distance = msg.ranges[Index]
+
+        for Index in range(Right_Index -50, Right_Index + 50):
+            if msg.ranges[Index] < Right_Distance:
+                Right_Distance = msg.ranges[Index]
+
+        for Index in range(Left_Index -50, Left_Index + 50):
+            if msg.ranges[Index] < Left_Distance:
+                Left_Distance = msg.ranges[Index]
+        
+        for Index in range(Back_Index, Back_Index + 50):
+            if msg.ranges[Index] < Back_Distance:
+                Back_Distance = msg.ranges[Index]
+
+        for Index in range(Length_Message-50, Length_Message):
+            if msg.ranges[Index] < Back_Distance:
+                Back_Distance = msg.ranges[Index]
+        
+        if abs(Head_Distance - self.Last_Head_Distance) <= 0.1:
+            self.Head_Count_Check += 1
+            if self.Head_Count_Check == 2:
+                self.Head_Distance = Head_Distance
+                self.Head_Count_Check = 0
+        else:
+            self.Head_Count_Check = 0
+        self.Last_Head_Distance = Head_Distance
+
+        if abs(Right_Distance - self.Last_Right_Distance) <= 0.1:
+            self.Right_Count_Check += 1
+            if self.Right_Count_Check == 2:
+                self.Right_Distance = Right_Distance
+                self.Right_Count_Check = 0
+        else:
+            self.Right_Count_Check = 0
+        self.Right_Distance = Right_Distance
+
+        if abs(Back_Distance - self.Last_Back_Distance) <= 0.1:
+            self.Back_Count_Check += 1
+            if self.Back_Count_Check == 2:
+                self.Back_Distance = Back_Distance
+                self.Back_Count_Check = 0
+        else:
+            self.Back_Count_Check = 0
+        self.Back_Distance = Back_Distance
+
+        if abs(Left_Distance - self.Last_Left_Distance) <= 0.1:
+            self.Left_Count_Check += 1
+            if self.Left_Count_Check == 2:
+                self.Left_Distance = Left_Distance
+                self.Left_Count_Check = 0
+        else:
+            self.Left_Count_Check = 0
+        self.Last_Left_Distance = Left_Distance
+
+
 class Penalty_Map():
     def __init__(self) -> None:
         self.__Number_Cell_In_Edge_Map = 100 
@@ -147,11 +238,15 @@ class Penalty_Map():
                 else:                                                                    ## occupied cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 500
 
-    def Calcutate_Penalty_Map_With_Passed_Position(self,Passed_Positions:list):
+    def Calcutate_Penalty_Map_With_Passed_Positions(self,Passed_Positions:list):
         for Position in Passed_Positions:
             X_Axis = Position[0]
             Y_Axis = Position[1]
             self.Penalty_Map[X_Axis][Y_Axis] = 40
+
+    def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occuupied_Positions):
+        for Position in Occuupied_Positions:
+            self.Penalty_Map[Position[0]][Position[1]] = 5000
     
     def Get_Penalty_Map(self):
         return self.Penalty_Map
@@ -168,12 +263,13 @@ class Position():
         self.Passed_Positions = [self.Start_Position]
         self.Now_Position = (self.Start_Position)
         self.Last_Position = self.Start_Position
-        self.SLAM_Now_Pose = () 
+        self.SLAM_Now_Pose = self.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=self.Start_Position) 
         self.SLAM_Now_Angle = 0
         self.Target_Position = ()
         self.Count_Check = 0
         self.Now_Angle = 0
         self.Target_Angle = 0
+        self.Occupied_Positions = []
 
     
     def Convert_PenaltyMap_Position_To_SLAM_Pose(self, PenaltyMap_Position:tuple):
@@ -287,12 +383,23 @@ class Position():
         else:
             pass
 
+    def Get_Occupied_Position(self):
+        return self.Occupied_Positions
+
+    def Update_Occupied_Position(self,Position):
+        if Position not in self.Occupied_Positions:
+            self.Occupied_Positions.append(Position)
+        else:
+            pass
+
 
 class Controller():
-    def __init__(self,Penalty_Map:Penalty_Map,Robot_Position:Position, Path_Planning:Dijkstra) -> None:
+    def __init__(self,Penalty_Map:Penalty_Map,Robot_Position:Position, Path_Planning:Dijkstra, Robot_Lidar:Lidar) -> None:
         self.Penalty_Map = Penalty_Map
         self.Robot_Position = Robot_Position
         self.Path_Planning = Path_Planning
+        self.Robot_Lidar = Robot_Lidar
+        self.Is_Forwarding = False
         self.Finish_Flag = False
 
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
@@ -443,38 +550,10 @@ class Controller():
         else:
             List_Commands = []
         return List_Commands
-    
-    def __Determine_Penalty_Point_Of_Around_Position(self):
-        (X_Now,Y_Now) = self.Robot_Position.Get_Now_Position()
-        Now_Angle = self.Robot_Position.Get_Now_Angle()
-        if Now_Angle == 0:
-            Head_Pose =     (X_Now + 1,Y_Now)
-            Left_Pose =     (X_Now,Y_Now - 1)
-            Back_Pose =     (X_Now - 1,Y_Now)
-            Right_Pose =    (X_Now,Y_Now + 1)
-        elif Now_Angle == 90:
-            Head_Pose =     (X_Now,Y_Now - 1)
-            Left_Pose =     (X_Now + 1,Y_Now)
-            Back_Pose =     (X_Now,Y_Now + 1)
-            Right_Pose =    (X_Now - 1,Y_Now)
-        elif Now_Angle == 180:
-            Head_Pose =     (X_Now - 1,Y_Now)
-            Left_Pose =     (X_Now,Y_Now + 1)
-            Back_Pose =     (X_Now + 1,Y_Now)
-            Right_Pose =    (X_Now,Y_Now - 1)
-        else:
-            Head_Pose =     (X_Now,Y_Now + 1)
-            Left_Pose =     (X_Now - 1,Y_Now)
-            Back_Pose =     (X_Now,Y_Now - 1)
-            Right_Pose =    (X_Now + 1,Y_Now)
-        
-        Head_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Head_Pose)
-        Right_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Right_Pose)
-        Left_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Left_Pose)
-        Back_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Back_Pose)
-        return Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty
+
 
     def __Get_Command_For_Control_Robot_Forward(self):
+        self.Is_Forwarding = True
         Target_Position = self.Robot_Position.Get_Target_Position()
         SLAM_Target_Pose = self.Robot_Position.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=Target_Position)
         SLAM_Now_Pose = self.Robot_Position.Get_SLAM_Now_Pose()
@@ -490,11 +569,18 @@ class Controller():
         }
         
         return Command
-
-    def __Determine_Back_Solution(self):
+    
+    def __Get_Commands_For_Control_Robot_Rotate_BackSide(self):
+        (Head_Distance, Right_Distance, Back_Distance, Left_Distance) = self.Robot_Lidar.Get_Distances()
         List_Commands = []
-        Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty = self.__Determine_Penalty_Point_Of_Around_Position()
-        if Right_Penalty <= 40:
+
+        if Head_Distance <= 40:
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 40
+            })
+
+        elif Right_Distance > 45:
             List_Commands.append({
                 "Type"  : "Rotate-Right",
                 "Value" : 90
@@ -507,7 +593,8 @@ class Controller():
                 "Type"  : "Rotate-Right",
                 "Value" : 90
             })
-        elif Left_Penalty <= 40:
+
+        elif Left_Distance > 45:
             List_Commands.append({
                 "Type"  : "Rotate-Left",
                 "Value" : 90
@@ -520,6 +607,7 @@ class Controller():
                 "Type"  : "Rotate-Left",
                 "Value" : 90
             })
+
         else:
             List_Commands.append({
                 "Type"  : "Backward",
@@ -543,13 +631,17 @@ class Controller():
 
         if Target_Angle == Now_Angle:           # In same direction so can move
             if self.Finish_Flag == True:
-                Command["Type"] = "Finish"
+                List_Commands.append({
+                        "Type"  : "Finish",
+                        "Value" : 0
+                    })
             else:
-                Command["Type"] = "Forward"
+                List_Commands.append(self.__Get_Command_For_Control_Robot_Forward())
 
         elif abs(Target_Angle - Now_Angle) == 180:
-            Command["Type"] = "Back_Movement"
-            Command["Value"] = 180
+            List_Commands.append(self.__Get_Commands_For_Control_Robot_Rotate_BackSide())
+            if List_Commands[0]["Type"] == "Backward":
+                self.Robot_Position.Update_Target_Angle(Angle=Now_Angle)
 
         else:                                   # Not same direction so must be rotate first
             if Target_Angle == 0:
@@ -572,15 +664,7 @@ class Controller():
                 else:
                     Command["Type"] = "Rotate-Left"
                     Command["Value"] = -(Target_Angle - Now_Angle)
-        
 
-        if Command["Type"] == "Forward":
-            List_Commands.append(self.__Get_Command_For_Control_Robot_Forward())
-        
-        elif Command["Type"] == "Back_Movement":
-            List_Commands = self.__Determine_Back_Solution()
-
-        else:
             List_Commands.append({
                 "Type"  : "Backward",
                 "Value" : 20
@@ -590,6 +674,7 @@ class Controller():
                 "Type"  : "Backward",
                 "Value" : 20
             })
+        
         return List_Commands
     
     def Get_List_Command_Robot(self):
@@ -616,45 +701,69 @@ class Main():
     def __init__(self) -> None:
         self.Command_Message = Command()
         self.Publisher = rospy.Publisher("Commander",Command,queue_size=50)
-        self.Algorithm_Controller = Controller(Penalty_Map=Penalty_Map(),
-                                        Robot_Position=Position(),
+        self.Algorithm_Controller = Controller(Penalty_Map=Penalty_Map(),Robot_Lidar= Lidar(),Robot_Position=Position(),
                                         Path_Planning=Dijkstra(Number_X_Axis=Penalty_Map().Get_Number_X_Axis_In_Map(),Number_Y_Axis=Penalty_Map().Get_Number_X_Axis_In_Map()))
 
-        self.List_Command = []
+        self.List_Commands = []
         self.Flag_Map = False
         self.Flag_Position = False
 
     def __On_Task_Is_Done(self):
-        if len(self.List_Command) == 1:
+        self.Algorithm_Controller.Is_Forwarding = False
+        if len(self.List_Commands) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
         else:
             pass
-        del self.List_Command[0]
+        del self.List_Commands[0]
 
     def __Command_Robot(self):
-        if len(self.List_Command) ==0:
-            self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
-            if len(self.List_Command) == 0:
+        if len(self.List_Commands) ==0:
+            self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
+            if len(self.List_Commands) == 0:
                 time.sleep(0.5)
-                self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
+                self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
                 pass
         else: 
             pass
-        if self.List_Command[0]["Type"] == "Finish":
+        if self.List_Commands[0]["Type"] == "Finish":
             print("Finish")
         else:
-            self.__Send_Command_To_Robot(Command = self.List_Command[0])
+            self.__Send_Command_To_Robot(Command = self.List_Commands[0])
 
     def __Send_Command_To_Robot(self, Command):
         self.Command_Message.type = Command["Type"]
         self.Command_Message.value = Command["Value"]
         self.Publisher.publish(self.Command_Message)
 
+    def __Stop_Robot(self):
+        print("Stop Robot Urgency")
+        self.List_Commands = []
+        self.Command_Message.type = "Stop"
+        self.Command_Message.value = 0
+        self.Publisher.publish(self.Command_Message)
+    
+    def Object_Detected(self):
+        self.__Stop_Robot()
+        self.Algorithm_Controller.Is_Forwarding = False
+        rospy.sleep(2)
+        Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
+        if Distances[0] < 0.3:
+            if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
+                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Target_Position)
+            else:
+                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Now_Position())
+        self.__Command_Robot()
+
+
+
     def Map_Callback_Handler(self,data):
         self.Flag_Map = True
+        Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
+        Occupied_Positions = self.Algorithm_Controller.Robot_Position.Get_Occupied_Position()
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
-        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=self.Algorithm_Controller.Robot_Position.Get_Passed_Positions())
+        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions=Passed_Positions)
+        self.Algorithm_Controller.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
 
     def Position_Callback_Handler(self,msg:PoseStamped):
         self.Flag_Position = True
@@ -672,6 +781,14 @@ class Main():
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
         self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
+    def Lidar_Callback_Handler(self,msg:LaserScan):
+        self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
+        if self.Algorithm_Controller.Is_Forwarding == True:
+            Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
+            if Distances[0] <= 0.3:
+                self.Object_Detected()
+
+        
     def STM32_Message_Callback_Handler(self,Message):
         if Message.data == "Start":
             while (self.Flag_Map == False or self.Flag_Position == False):
@@ -686,6 +803,7 @@ class Main():
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
+        rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
         rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)
         rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
         print("Controller Started")
