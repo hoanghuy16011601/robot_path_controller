@@ -17,11 +17,11 @@ class Lidar():
     def Convert_To_Algorithm_Distance(Ranges):
         print("test")
         # Get Head
-def scan_callback(msg):
+def scan_callback(msg:LaserScan):
     # Lấy giá trị khoảng cách của tia giữa
     head_index = len(msg.ranges) // 2
     left_index = len(msg.ranges) // 4
-    right_index = len(msg.range)*3 //4
+    right_index = len(msg.ranges)*3 //4
     back_index = 0
     rospy.loginfo("Head_Distance: %.2f m", msg.ranges[head_index])
     rospy.loginfo("Left_Distance: %.2f m", msg.ranges[left_index])
