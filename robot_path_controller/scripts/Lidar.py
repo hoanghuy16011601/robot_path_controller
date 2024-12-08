@@ -28,6 +28,7 @@ def scan_callback(msg:LaserScan):
     rospy.loginfo("Back_Distance: %.2f m", msg.ranges[back_index])
     rospy.loginfo("Right_Distance: %.2f m", msg.ranges[right_index])
     # Lấy toàn bộ giá trị khoảng cách (nếu cần)
+    time.sleep(0.5)
 
 def main():
     # Khởi tạo ROS node
