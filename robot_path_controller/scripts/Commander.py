@@ -393,6 +393,19 @@ class Position():
         else:
             pass
 
+    def Get_Ahead_Position(self):
+        if self.Now_Angle == 0:
+            Direction_Bias = (1,0)
+        elif self.Now_Angle == 90:
+            Direction_Bias = (0,-1)
+        elif self.Now_Angle == 180:
+            Direction_Bias = (-1,0)
+        elif self.Now_Angle == 270:
+            Direction_Bias = (0,1)
+        
+        Ahead_Pose = self.Now_Position + Direction_Bias
+        return Ahead_Pose
+
 
 class Controller():
     def __init__(self,Penalty_Map:Penalty_Map,Robot_Position:Position, Path_Planning:Dijkstra, Robot_Lidar:Lidar) -> None:
@@ -552,6 +565,8 @@ class Controller():
         else:
             List_Commands = []
         return List_Commands
+    
+
 
 
     def __Get_Command_For_Control_Robot_Forward(self):
@@ -754,9 +769,9 @@ class Main():
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.3:
             if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
-                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Target_Position)
+                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
             else:
-                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Now_Position())
+                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
         self.__Command_Robot()
 
 
