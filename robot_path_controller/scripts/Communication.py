@@ -46,7 +46,7 @@ class STM32_Message_Controller():
 
 
     def Start(self):
-        Port_Name = "/dev/ttyUSB1"  # Replace with your port
+        Port_Name = "/dev/ttyUSB0"  # Replace with your port
         BaudRate = 57600
         try:# Open the serial port
             self.Serial = serial.Serial(Port_Name, BaudRate, timeout=1)

@@ -143,28 +143,29 @@ class Lidar():
         Right_Index = Length_Message // 4
         Back_Index = 0
         Left_Index = (Length_Message*3) //4
+        Index_Parameter = 60
         Head_Distance = 10
         Right_Distance = 10
         Back_Distance = 10
         Left_Distance =10
         
-        for Index in range(Head_Index-50,Head_Index + 50):
+        for Index in range(Head_Index-Index_Parameter,Head_Index + Index_Parameter):
             if msg.ranges[Index] < Head_Distance:
                 Head_Distance = msg.ranges[Index]
 
-        for Index in range(Right_Index -50, Right_Index + 50):
+        for Index in range(Right_Index -Index_Parameter, Right_Index + Index_Parameter):
             if msg.ranges[Index] < Right_Distance:
                 Right_Distance = msg.ranges[Index]
 
-        for Index in range(Left_Index -50, Left_Index + 50):
+        for Index in range(Left_Index -Index_Parameter, Left_Index + Index_Parameter):
             if msg.ranges[Index] < Left_Distance:
                 Left_Distance = msg.ranges[Index]
         
-        for Index in range(Back_Index, Back_Index + 50):
+        for Index in range(Back_Index, Back_Index + Index_Parameter):
             if msg.ranges[Index] < Back_Distance:
                 Back_Distance = msg.ranges[Index]
 
-        for Index in range(Length_Message-50, Length_Message):
+        for Index in range(Length_Message-Index_Parameter, Length_Message):
             if msg.ranges[Index] < Back_Distance:
                 Back_Distance = msg.ranges[Index]
         
@@ -403,7 +404,7 @@ class Controller():
         self.Finish_Flag = False
 
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
-        Lowest_Point = 40
+        Lowest_Point = 24
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map() 
         for X in range(0,Length_Axis):
             for Y in range(0,Length_Axis):
@@ -411,7 +412,7 @@ class Controller():
                     Lowest_Point = Penalty_Map[X][Y]
                 else:
                     pass
-        if Lowest_Point < 40:
+        if Lowest_Point < 24:
             Is_Cover_Full_Map = False
         else:
             Is_Cover_Full_Map = True
@@ -432,7 +433,7 @@ class Controller():
             Direction_Point = (1,0)
             Bias = (0,1)
         elif Now_Angle == 90:
-            Direction_Point = (0,-1)
+            Direction_Point = (0,1)
             Bias = (0,1)
         else:
             Direction_Point = (0,1)
@@ -721,7 +722,7 @@ class Main():
         if len(self.List_Commands) ==0:
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
-                time.sleep(0.5)
+                time.sleep(0.2)
                 self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
                 pass
