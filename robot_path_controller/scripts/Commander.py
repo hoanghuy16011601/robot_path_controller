@@ -400,7 +400,6 @@ class Controller():
         self.Robot_Position = Robot_Position
         self.Path_Planning = Path_Planning
         self.Robot_Lidar = Robot_Lidar
-        self.Is_Forwarding = False
         self.Finish_Flag = False
 
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
@@ -556,7 +555,6 @@ class Controller():
 
 
     def __Get_Command_For_Control_Robot_Forward(self):
-        self.Is_Forwarding = True
         Target_Position = self.Robot_Position.Get_Target_Position()
         SLAM_Target_Pose = self.Robot_Position.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=Target_Position)
         SLAM_Now_Pose = self.Robot_Position.Get_SLAM_Now_Pose()
@@ -710,9 +708,10 @@ class Main():
         self.List_Commands = []
         self.Flag_Map = False
         self.Flag_Position = False
+        self.Is_Movement = False
 
     def __On_Task_Is_Done(self):
-        self.Algorithm_Controller.Is_Forwarding = False
+        self.Is_Movement = False
         if len(self.List_Commands) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
         else:
@@ -735,6 +734,7 @@ class Main():
             self.__Send_Command_To_Robot(Command = self.List_Commands[0])
 
     def __Send_Command_To_Robot(self, Command):
+        self.Is_Movement = True 
         self.Command_Message.type = Command["Type"]
         self.Command_Message.value = Command["Value"]
         self.Publisher.publish(self.Command_Message)
@@ -748,7 +748,7 @@ class Main():
     
     def Object_Detected(self):
         self.__Stop_Robot()
-        self.Algorithm_Controller.Is_Forwarding = False
+        self.Is_Movement = False
         rospy.sleep(2)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.3:
@@ -786,7 +786,7 @@ class Main():
 
     def Lidar_Callback_Handler(self,msg:LaserScan):
         self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
-        if self.Algorithm_Controller.Is_Forwarding == True:
+        if self.Is_Movement == True:
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
                 self.Object_Detected()
