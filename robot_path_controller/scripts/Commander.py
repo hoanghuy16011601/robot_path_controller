@@ -791,6 +791,7 @@ class Main():
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
                 self.Object_Detected()
+                rospy.sleep(1)
 
         
     def STM32_Message_Callback_Handler(self,Message):
