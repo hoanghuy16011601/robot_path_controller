@@ -588,13 +588,13 @@ class Controller():
         (Head_Distance, Right_Distance, Back_Distance, Left_Distance) = self.Robot_Lidar.Get_Distances()
         List_Commands = []
 
-        if Head_Distance <= 40:
+        if Head_Distance <= 0.4:
             List_Commands.append({
                 "Type"  : "Backward",
                 "Value" : 40
             })
 
-        elif Right_Distance > 45:
+        elif Right_Distance > 0.45:
             List_Commands.append({
                 "Type"  : "Rotate-Right",
                 "Value" : 90
@@ -608,7 +608,7 @@ class Controller():
                 "Value" : 90
             })
 
-        elif Left_Distance > 45:
+        elif Left_Distance > 0.45:
             List_Commands.append({
                 "Type"  : "Rotate-Left",
                 "Value" : 90
