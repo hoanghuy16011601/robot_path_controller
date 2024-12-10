@@ -734,7 +734,8 @@ class Main():
             self.__Send_Command_To_Robot(Command = self.List_Commands[0])
 
     def __Send_Command_To_Robot(self, Command):
-        self.Is_Movement = True 
+        if "Rotate" in Command["Type"] or Command["Type"] == "Forward":
+            self.Is_Movement = True 
         self.Command_Message.type = Command["Type"]
         self.Command_Message.value = Command["Value"]
         self.Publisher.publish(self.Command_Message)
