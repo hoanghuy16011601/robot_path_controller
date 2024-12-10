@@ -149,11 +149,11 @@ class Lidar():
         Back_Distance = 10
         Left_Distance =10
         
-        for Index in range(Head_Index-Index_Parameter,Head_Index + Index_Parameter):
+        for Index in range(Head_Index-Index_Parameter,Head_Index + Index_Parameter + 10):
             if msg.ranges[Index] < Head_Distance:
                 Head_Distance = msg.ranges[Index]
 
-        for Index in range(Right_Index -Index_Parameter, Right_Index + Index_Parameter):
+        for Index in range(Right_Index -Index_Parameter, Right_Index + Index_Parameter + 10):
             if msg.ranges[Index] < Right_Distance:
                 Right_Distance = msg.ranges[Index]
 
