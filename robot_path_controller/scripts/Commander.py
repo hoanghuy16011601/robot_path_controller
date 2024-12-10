@@ -762,6 +762,7 @@ class Main():
         self.Command_Message.type = "Backward"
         self.Command_Message.value = 40
         self.Publisher.publish(self.Command_Message)
+        print("Robot Backward")
 
     def __Stop_Robot(self):
         self.Command_Message.type = "Stop"
@@ -770,8 +771,8 @@ class Main():
         print("Stop Robot Urgency")
     
     def Object_Detected(self):
-        self.__Stop_Robot()
         self.Is_Movement = False
+        self.__Stop_Robot()
         rospy.sleep(1)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.3:
@@ -814,6 +815,7 @@ class Main():
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
                 self.Object_Detected()
+                rospy.sleep(0.5)
 
         
     def STM32_Message_Callback_Handler(self,Message):
