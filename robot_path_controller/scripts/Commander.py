@@ -567,8 +567,6 @@ class Controller():
         return List_Commands
     
 
-
-
     def __Get_Command_For_Control_Robot_Forward(self):
         Target_Position = self.Robot_Position.Get_Target_Position()
         SLAM_Target_Pose = self.Robot_Position.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=Target_Position)
@@ -760,12 +758,16 @@ class Main():
         self.Command_Message.value = Command["Value"]
         self.Publisher.publish(self.Command_Message)
 
+    def __Robot_Backward(self):
+        self.Command_Message.type = "Backward"
+        self.Command_Message.value = 40
+        self.Publisher.publish(self.Command_Message)
+
     def __Stop_Robot(self):
-        print("Stop Robot Urgency")
-        self.List_Commands = []
         self.Command_Message.type = "Stop"
         self.Command_Message.value = 0
         self.Publisher.publish(self.Command_Message)
+        print("Stop Robot Urgency")
     
     def Object_Detected(self):
         self.__Stop_Robot()
@@ -777,7 +779,7 @@ class Main():
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
             else:
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
-        rospy.sleep(1)
+            self.__Robot_Backward()
         self.__Command_Robot()
 
 
@@ -812,7 +814,6 @@ class Main():
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
                 self.Object_Detected()
-                rospy.sleep(1)
 
         
     def STM32_Message_Callback_Handler(self,Message):
