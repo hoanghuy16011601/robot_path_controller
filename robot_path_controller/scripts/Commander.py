@@ -665,6 +665,11 @@ class Controller():
             else:
                 pass
 
+            Distances = self.Robot_Lidar.Get_Distances()
+            if Distances[0] < 23:
+                Back_Distance = 25
+            else:
+                Back_Distance = 20
             if (Target_Angle - Now_Angle) > 0:
                 if (Target_Angle - Now_Angle) > 180:
                     Command["Type"] = "Rotate-Left"
@@ -683,12 +688,12 @@ class Controller():
 
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : Back_Distance
             })
             List_Commands.append(Command)
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : Back_Distance
             })
         
         return List_Commands
@@ -765,13 +770,14 @@ class Main():
     def Object_Detected(self):
         self.__Stop_Robot()
         self.Is_Movement = False
-        rospy.sleep(2)
+        rospy.sleep(1)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.3:
             if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
             else:
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
+        rospy.sleep(1)
         self.__Command_Robot()
 
 
@@ -806,7 +812,7 @@ class Main():
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
                 self.Object_Detected()
-                rospy.sleep(1)
+                rospy.sleep(0.5)
 
         
     def STM32_Message_Callback_Handler(self,Message):
