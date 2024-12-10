@@ -734,7 +734,10 @@ class Main():
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
         else:
             pass
-        del self.List_Commands[0]
+        if len(self.List_Commands) > 0:
+            del self.List_Commands[0]
+        else:
+            pass
 
     def __Command_Robot(self):
         if len(self.List_Commands) ==0:
@@ -781,7 +784,7 @@ class Main():
             else:
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
             self.__Robot_Backward()
-        self.__Command_Robot()
+            del self.List_Commands[:]
 
 
 
