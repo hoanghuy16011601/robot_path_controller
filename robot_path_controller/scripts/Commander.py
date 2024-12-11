@@ -763,7 +763,7 @@ class Main():
 
     def __Robot_Backward(self):
         self.Command_Message.type = "Backward"
-        self.Command_Message.value = 20
+        self.Command_Message.value = 15
         self.Publisher.publish(self.Command_Message)
         print("Robot Backward")
 
