@@ -117,6 +117,7 @@ class Dijkstra():
 
 class Lidar():
     def __init__(self):
+        self.Valid_Value = False
         self.Angle_Increment = 0.47368  # degrees
         self.Head_Distance = 10
         self.Head_Count_Check = 0
@@ -172,6 +173,7 @@ class Lidar():
         if abs(Head_Distance - self.Last_Head_Distance) <= 0.1:
             self.Head_Count_Check += 1
             if self.Head_Count_Check == 2:
+                self.Valid_Value = True
                 self.Head_Distance = Head_Distance
                 self.Head_Count_Check = 0
         else:
@@ -822,10 +824,10 @@ class Main():
 
     def Lidar_Callback_Handler(self,msg:LaserScan):
         self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
-        if self.Is_Movement == True:
+        if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
-                print(f"Distance {Distances}")
+                self.Algorithm_Controller.Robot_Lidar.Valid_Value = False
                 self.Object_Detected(Source= "Lidar")
                 rospy.sleep(0.5)
 
