@@ -716,7 +716,8 @@ class Controller():
             New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
         else:
             New_Angle = 0
-            self.Finish_Flag = True
+            if Now_Angle == 0:
+                self.Finish_Flag = True
 
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
@@ -773,7 +774,7 @@ class Main():
 
     def __Robot_Backward(self):
         self.Command_Message.type = "Backward"
-        self.Command_Message.value = 15
+        self.Command_Message.value = 20
         self.Publisher.publish(self.Command_Message)
         print("Robot Backward")
 
