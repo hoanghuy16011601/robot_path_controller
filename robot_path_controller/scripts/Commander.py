@@ -783,8 +783,8 @@ class Main():
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
             else:
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
-            self.__Robot_Backward()
-            del self.List_Commands[:]
+        self.__Robot_Backward()
+        del self.List_Commands[:]
 
 
 
