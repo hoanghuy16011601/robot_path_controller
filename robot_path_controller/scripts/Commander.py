@@ -519,7 +519,7 @@ class Controller():
                 Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
             print(f"Target Pose:{Target_Pose}")
             Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
-            if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 50 : 
+            if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 50 and Reponse == False: 
                 self.Robot_Position.Update_Occupied_Position(Target_Pose)
                 Valid_Position = False
             else:
