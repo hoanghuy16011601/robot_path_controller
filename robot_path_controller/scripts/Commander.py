@@ -828,7 +828,7 @@ class Main():
         elif Message.data == "Movement_Okay" or Message.data == "Rotation_Okay":
             self.__On_Task_Is_Done()
         elif Message.data == "Object_Detected":
-            self.Object_Detected();
+            self.Object_Detected()
         else:   
             pass # Reserve 
 
