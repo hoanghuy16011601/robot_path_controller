@@ -775,7 +775,9 @@ class Main():
     
     def Object_Detected(self,Source = "Lidar"):
         self.Is_Movement = False
+        del self.List_Commands[:]
         self.__Stop_Robot()
+        self.__Robot_Backward()
         rospy.sleep(1)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.3 or Source == "Ultrasonic":
@@ -783,8 +785,6 @@ class Main():
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
             else:
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
-        self.__Robot_Backward()
-        del self.List_Commands[:]
 
 
 
