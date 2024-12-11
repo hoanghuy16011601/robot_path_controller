@@ -825,6 +825,7 @@ class Main():
         if self.Is_Movement == True:
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
+                print(f"Distance {Distances}")
                 self.Object_Detected(Source= "Lidar")
                 rospy.sleep(0.5)
 
