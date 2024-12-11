@@ -503,17 +503,24 @@ class Controller():
         return New_Pose
     
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
-        Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
-        if Reponse == True:
-            print("Robot has covered full map")
-            if Now_Position != self.Robot_Position.Get_Start_Position():
-                Target_Pose = self.Robot_Position.Get_Start_Position()
+        Valid_Position = False
+        while Valid_Position == False:
+            Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
+            if Reponse == True:
+                print("Robot has covered full map")
+                if Now_Position != self.Robot_Position.Get_Start_Position():
+                    Target_Pose = self.Robot_Position.Get_Start_Position()
+                else:
+                    return self.Robot_Position.Get_Start_Position(),True
             else:
-                return self.Robot_Position.Get_Start_Position(),True
-        else:
-            Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
-        print(f"Target Pose:{Target_Pose}")
-        Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
+                Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
+            print(f"Target Pose:{Target_Pose}")
+            Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
+            if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 50 : 
+                self.Robot_Position.Update_Occupied_Position(Target_Pose)
+                Valid_Position = False
+            else:
+                Valid_Position = True
         return Path[0], False
     
     def Determine_New_Angle_For_Robot(self,Target_Position:tuple, Now_Position:tuple, Now_Angle:int):
@@ -819,6 +826,7 @@ class Main():
             if Distances[0] <= 0.3:
                 self.Object_Detected(Source= "Lidar")
                 rospy.sleep(0.5)
+
 
         
     def STM32_Message_Callback_Handler(self,Message):
