@@ -111,7 +111,7 @@ class Dijkstra():
             Grid_State_End = self.__Find_Lowest_Penalty_Of_Grid_Is_Not_Found(Target_Grid=End_Grid)
             self.__Update_Status_Of_Grid_Planning(Grid=Grid_State_End,Status="Found")
         Path_Planning = self.__Find_Path_Of_Found_Grid(Found_Grid=Grid_State_End)
-        print(Path_Planning)
+        print(f"Path Planning: {Path_Planning}")
         return Path_Planning
 
 
@@ -478,7 +478,7 @@ class Controller():
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 50 + Penalty_Point + Extra_point
                 else:
                     PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
-        print(List_Free)
+        print(f"List Free Position {List_Free}")
         return PointMap_For_Posible_Pose
     
     def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position):
@@ -505,6 +505,7 @@ class Controller():
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
         Valid_Position = False
         while Valid_Position == False:
+            print(f"Occupied Position {self.Robot_Position.Get_Occupied_Position()}")
             Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
             if Reponse == True:
                 print("Robot has covered full map")
