@@ -840,8 +840,8 @@ class Main():
                 pass                                                ## Waiting for setup finish
         elif Message.data == "Movement_Okay" or Message.data == "Rotation_Okay":
             self.__On_Task_Is_Done()
-        elif Message.data == "Object_Detected":
-            self.Object_Detected(Source = "Ultrasonic")
+        # elif Message.data == "Object_Detected":
+        #     self.Object_Detected(Source = "Ultrasonic")
         else:   
             pass # Reserve 
 
@@ -850,7 +850,7 @@ class Main():
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
-        rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
+        # rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
         rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)
         rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
         print("Controller Started")
