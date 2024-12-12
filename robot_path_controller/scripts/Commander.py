@@ -826,11 +826,11 @@ class Main():
 
     def Lidar_Callback_Handler(self,msg:LaserScan):
         self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
-        if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
-            Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
-            if Distances[0] <= 0.3:
-                self.Object_Detected(Source= "Lidar")
-                rospy.sleep(0.5)
+        # if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
+        #     Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
+        #     if Distances[0] <= 0.3:
+        #         self.Object_Detected(Source= "Lidar")
+        #         rospy.sleep(0.5)
 
 
         
@@ -850,7 +850,7 @@ class Main():
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
-        # rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
+        rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
         rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)
         rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
         print("Controller Started")
