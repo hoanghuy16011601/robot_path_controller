@@ -234,9 +234,9 @@ class Penalty_Map():
                 if (X % self.__Number_Cel_In_Edge_Grid == 0) and (Y % self.__Number_Cel_In_Edge_Grid == 0):
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] = 0
                 ## Calculate Penalty Point for map
-                if map.data[100*X + Y] == 0:                                             ## blank cell
+                if map.data[100*Y + X] == 0:                                             ## blank cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 1          
-                elif map.data[100*X + Y] == -1:                                          ## unexplored cell
+                elif map.data[100*Y + X] == -1:                                          ## unexplored cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 5
                 else:                                                                    ## occupied cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 500
