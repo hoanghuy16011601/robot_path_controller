@@ -786,6 +786,7 @@ class Main():
     
     def Object_Detected(self,Source = "Lidar"):
         self.Is_Movement = False
+        self.Algorithm_Controller.Robot_Lidar.Valid_Value = False
         del self.List_Commands[:]
         self.__Stop_Robot()
         time.sleep(1)
@@ -828,7 +829,6 @@ class Main():
         if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
             if Distances[0] <= 0.3:
-                self.Algorithm_Controller.Robot_Lidar.Valid_Value = False
                 self.Object_Detected(Source= "Lidar")
                 rospy.sleep(0.5)
 
