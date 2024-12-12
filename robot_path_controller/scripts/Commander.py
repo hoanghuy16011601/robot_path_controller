@@ -226,8 +226,8 @@ class Penalty_Map():
                 self.Penalty_Map[X_Axis].append(0)
     
     def Convert_Occupancy_Map_To_Penalty_Map(self,map:list):
-        for X in range(0,self.__Number_Cell_In_Edge_Map):
-            for Y in range(0,self.__Number_Cell_In_Edge_Map):
+        for Y in range(0,self.__Number_Cell_In_Edge_Map):
+            for X in range(0,self.__Number_Cell_In_Edge_Map):
                 ## Check reset available
                 X_In_Penalty_Map = int(X/self.__Number_Cel_In_Edge_Grid)
                 Y_In_Penalty_Map = int(Y/self.__Number_Cel_In_Edge_Grid)
@@ -806,6 +806,7 @@ class Main():
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
         self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions=Passed_Positions)
         self.Algorithm_Controller.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
+        print(self.Algorithm_Controller.Penalty_Map.Get_Penalty_Map())
 
     def Position_Callback_Handler(self,msg:PoseStamped):
         self.Flag_Position = True
