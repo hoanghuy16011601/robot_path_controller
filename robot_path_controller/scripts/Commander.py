@@ -316,14 +316,14 @@ class Position():
     def Determine_Now_Position(self,SLAM_Pose:tuple):
         Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(Raw_SLAM_Pose=SLAM_Pose)
 
-        if Check_Position == self.Last_Position and self.__Is_Middle_Position_In_SLAM_Pose(SLAM_Pose=Check_Position,Raw_SLAM_Pose=SLAM_Pose):
+        if Check_Position == self.Last_Position
             self.Count_Check +=1
         else:
             self.Count_Check == 0
 
         self.Last_Position = Check_Position
         
-        if self.Count_Check == 1:
+        if self.Count_Check == 3:
             self.Count_Check = 0
             Now_Position = Check_Position
             Is_Checked = True
