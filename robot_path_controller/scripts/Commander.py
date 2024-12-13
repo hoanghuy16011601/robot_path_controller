@@ -284,9 +284,9 @@ class Position():
 
         return (SLAM_Pose_X,SLAM_Pose_Y)
     
-    def __Convert_SLAM_Pose_To_PenaltyMap_Position(self,SLAM_Pose:tuple):
-        SLAM_Pose_X = SLAM_Pose[0]
-        SLAM_Pose_Y = SLAM_Pose[1]
+    def __Convert_SLAM_Pose_To_PenaltyMap_Position(self,Raw_SLAM_Pose:tuple):
+        SLAM_Pose_X = Raw_SLAM_Pose[0]
+        SLAM_Pose_Y = Raw_SLAM_Pose[1]
 
         if SLAM_Pose_X > 0:
             Position_X = (int)((SLAM_Pose_X + 0.2)/0.4) + 12
@@ -299,18 +299,31 @@ class Position():
             Position_Y = (int)((SLAM_Pose_Y-0.2)/0.4) + 12
         
         return (Position_X,Position_Y)
+    
+    def __Is_Middle_Position_In_SLAM_Pose(self,SLAM_Pose, Raw_SLAM_Pose):
+        Raw_Middle_Pose_X = (SLAM_Pose[0] - 12)*0.4  
+        Raw_Middle_Pose_Y = (SLAM_Pose[1] - 12)*0.4
+        if ((Raw_Middle_Pose_X -0.1 <= Raw_SLAM_Pose[0]) and (Raw_SLAM_Pose[0] <= Raw_Middle_Pose_X + 0.1)):
+            if ((Raw_Middle_Pose_Y -0.1 <= Raw_SLAM_Pose[1]) and (Raw_SLAM_Pose[1] <= Raw_Middle_Pose_Y + 0.1)):
+                Is_Middle_Position =True
+            else:
+                Is_Middle_Position = False
+        else:
+            Is_Middle_Position = False
+        return Is_Middle_Position
+            
 
     def Determine_Now_Position(self,SLAM_Pose:tuple):
-        Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(SLAM_Pose=SLAM_Pose)
+        Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(Raw_SLAM_Pose=SLAM_Pose)
 
-        if Check_Position == self.Last_Position:
+        if Check_Position == self.Last_Position and self.__Is_Middle_Position_In_SLAM_Pose(SLAM_Pose=Check_Position,Raw_SLAM_Pose=SLAM_Pose):
             self.Count_Check +=1
         else:
             self.Count_Check == 0
 
         self.Last_Position = Check_Position
         
-        if self.Count_Check == 3:
+        if self.Count_Check == 2:
             self.Count_Check = 0
             Now_Position = Check_Position
             Is_Checked = True
@@ -407,6 +420,8 @@ class Position():
         
         Ahead_Pose = self.Now_Position + Direction_Bias
         return Ahead_Pose
+    
+    
 
 
 class Controller():
