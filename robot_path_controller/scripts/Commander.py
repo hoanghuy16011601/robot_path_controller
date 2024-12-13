@@ -323,7 +323,7 @@ class Position():
 
         self.Last_Position = Check_Position
         
-        if self.Count_Check == 2:
+        if self.Count_Check == 1:
             self.Count_Check = 0
             Now_Position = Check_Position
             Is_Checked = True
