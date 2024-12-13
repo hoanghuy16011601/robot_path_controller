@@ -664,7 +664,7 @@ class Controller():
 
         elif abs(Target_Angle - Now_Angle) == 180:
             List_Commands = self.__Get_Commands_For_Control_Robot_Rotate_BackSide()
-            if List_Commands[0]["Type"] == "Backward":
+            if List_Commands[0]["Type"] == "Backward" and len(List_Commands) == 1:
                 self.Robot_Position.Update_Target_Angle(Angle=Now_Angle)
 
         else:                                   # Not same direction so must be rotate first
@@ -745,7 +745,7 @@ class Main():
             time.sleep(0.5)
         else:
             pass
-        
+
         if len(self.List_Commands) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
         else:
