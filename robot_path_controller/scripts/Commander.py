@@ -555,7 +555,7 @@ class Controller():
                 Error = Now_Angle - SLAM_Now_Angle
         else:
             Error = abs(Now_Angle - SLAM_Now_Angle)
-        if Error > 3:
+        if Error > 4:
             if (Now_Angle - SLAM_Now_Angle) > 0:
                 if (Now_Angle - SLAM_Now_Angle) > 180:
                     Command["Type"] = "Rotate-Left"
