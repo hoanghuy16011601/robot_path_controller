@@ -795,7 +795,7 @@ class Main():
         else:
             pass
 
-        if self.Algorithm_Controller.Robot_Position.Get_Now_Position() == self.Algorithm_Controller.Robot_Position.Get_Scope_Position():
+        if self.Algorithm_Controller.Robot_Position.Get_Scope_Position() in self.Algorithm_Controller.Robot_Position.Get_Passed_Positions():
             self.Algorithm_Controller.Robot_Position.Reset_Scope_Pose()
         else:
             pass
@@ -832,9 +832,9 @@ class Main():
         self.Command_Message.value = Command["Value"]
         self.Publisher.publish(self.Command_Message)
 
-    def __Robot_Backward(self):
+    def __Robot_Backward(self,Distance):
         self.Command_Message.type = "Backward"
-        self.Command_Message.value = 20
+        self.Command_Message.value = Distance
         self.Publisher.publish(self.Command_Message)
         print("Robot Backward")
 
@@ -851,12 +851,12 @@ class Main():
         self.__Stop_Robot()
         time.sleep(1)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
-        if Distances[0] < 0.3 or Source == "Ultrasonic":
+        if Distances[0] < 0.28 or Source == "Ultrasonic":
             if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
             else:
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
-        self.__Robot_Backward()
+        self.__Robot_Backward(Distance = 20)
         time.sleep(1)
 
 
@@ -886,11 +886,10 @@ class Main():
 
     def Lidar_Callback_Handler(self,msg:LaserScan):
         self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
-        # if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
-        #     Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
-        #     if Distances[0] <= 0.3:
-        #         self.Object_Detected(Source= "Lidar")
-        #         rospy.sleep(0.5)
+        if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
+            Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
+            if Distances[0] <= 0.28:
+                self.Object_Detected(Source= "Lidar")
 
 
         
