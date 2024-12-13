@@ -316,7 +316,7 @@ class Position():
     def Determine_Now_Position(self,SLAM_Pose:tuple):
         Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(Raw_SLAM_Pose=SLAM_Pose)
 
-        if Check_Position == self.Last_Position
+        if Check_Position == self.Last_Position:
             self.Count_Check +=1
         else:
             self.Count_Check == 0
