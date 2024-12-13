@@ -741,10 +741,16 @@ class Main():
 
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
+        if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
+            time.sleep(0.5)
+        else:
+            pass
+        
         if len(self.List_Commands) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
         else:
             pass
+
         if len(self.List_Commands) > 0:
             del self.List_Commands[0]
         else:
