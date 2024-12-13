@@ -303,8 +303,8 @@ class Position():
     def __Is_Middle_Position_In_SLAM_Pose(self,SLAM_Pose, Raw_SLAM_Pose):
         Raw_Middle_Pose_X = (SLAM_Pose[0] - 12)*0.4  
         Raw_Middle_Pose_Y = (SLAM_Pose[1] - 12)*0.4
-        if ((Raw_Middle_Pose_X -0.1 <= Raw_SLAM_Pose[0]) and (Raw_SLAM_Pose[0] <= Raw_Middle_Pose_X + 0.1)):
-            if ((Raw_Middle_Pose_Y -0.1 <= Raw_SLAM_Pose[1]) and (Raw_SLAM_Pose[1] <= Raw_Middle_Pose_Y + 0.1)):
+        if ((Raw_Middle_Pose_X -0.15 <= Raw_SLAM_Pose[0]) and (Raw_SLAM_Pose[0] <= Raw_Middle_Pose_X + 0.15)):
+            if ((Raw_Middle_Pose_Y -0.15 <= Raw_SLAM_Pose[1]) and (Raw_SLAM_Pose[1] <= Raw_Middle_Pose_Y + 0.15)):
                 Is_Middle_Position =True
             else:
                 Is_Middle_Position = False
