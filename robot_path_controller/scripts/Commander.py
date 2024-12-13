@@ -269,6 +269,7 @@ class Position():
         self.SLAM_Now_Pose = self.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=self.Start_Position) 
         self.SLAM_Now_Angle = 0
         self.Target_Position = ()
+        self.Scope_Position = ()
         self.Count_Check = 0
         self.Now_Angle = 0
         self.Target_Angle = 0
@@ -377,6 +378,15 @@ class Position():
     
     def Update_Target_Position(self,Position):
         self.Target_Position = Position
+
+    def Get_Scope_Position(self):
+        return self.Scope_Position
+    
+    def Reset_Scope_Pose(self):
+        self.Scope_Position = ()
+    
+    def Update_Scope_Position(self,Position):
+        self.Scope_Position = Position
     
     def Get_Now_Angle(self):
         return self.Now_Angle
@@ -527,15 +537,17 @@ class Controller():
             if Reponse == True:
                 print("Robot has covered full map")
                 if Now_Position != self.Robot_Position.Get_Start_Position():
-                    Target_Pose = self.Robot_Position.Get_Start_Position()
+                    self.Robot_Position.Update_Scope_Position(self.Robot_Position.Get_Start_Position())
                 else:
                     return self.Robot_Position.Get_Start_Position(),True
             else:
-                Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
-            print(f"Target Pose:{Target_Pose}")
-            Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
-            if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 50 and Reponse == False: 
-                self.Robot_Position.Update_Occupied_Position(Target_Pose)
+                if self.Robot_Position.Get_Scope_Position() == ():
+                    self.Robot_Position.Update_Scope_Position(self.__Determine_Possible_NewPosition_To_Move())
+            Scope_Pose = self.Robot_Position.Get_Scope_Position()
+            print(f"Scope Pose:{Scope_Pose}")
+            Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Scope_Pose,Penalty_Map=Now_Penalty_Map)
+            if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 48 and Reponse == False: 
+                self.Robot_Position.Update_Occupied_Position(Scope_Pose)
                 Valid_Position = False
             else:
                 Valid_Position = True
@@ -780,6 +792,11 @@ class Main():
         self.Is_Movement = False
         if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
             time.sleep(0.5)
+        else:
+            pass
+
+        if self.Algorithm_Controller.Robot_Position.Get_Now_Position() == self.Algorithm_Controller.Robot_Position.Get_Scope_Position():
+            self.Algorithm_Controller.Robot_Position.Reset_Scope_Pose()
         else:
             pass
 
