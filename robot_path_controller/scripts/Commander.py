@@ -250,6 +250,9 @@ class Penalty_Map():
     def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occuupied_Positions):
         for Position in Occuupied_Positions:
             self.Penalty_Map[Position[0]][Position[1]] = 5000
+
+    def Update_Occupied_In_PenaltyMap(self,Occupied_Position):
+        self.Penalty_Map[Occupied_Position[0]][Occupied_Position[1]] = 5000
     
     def Get_Penalty_Map(self):
         return self.Penalty_Map
@@ -855,9 +858,11 @@ class Main():
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.28 or Source == "Ultrasonic":
             if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
-                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Target_Position())
+                Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
+                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
             else:
-                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=self.Algorithm_Controller.Robot_Position.Get_Ahead_Position())
+                Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Ahead_Position()
+                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
         self.__Robot_Backward(Distance = 20)
         time.sleep(1)
 
