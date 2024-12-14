@@ -586,7 +586,7 @@ class Controller():
                 Error = Now_Angle - SLAM_Now_Angle
         else:
             Error = abs(Now_Angle - SLAM_Now_Angle)
-        if Error > 4:
+        if Error > 3:
             if (Now_Angle - SLAM_Now_Angle) > 0:
                 if (Now_Angle - SLAM_Now_Angle) > 180:
                     Command["Type"] = "Rotate-Left"
@@ -794,6 +794,7 @@ class Main():
 
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
+        time.sleep(0.5)
         if len(self.List_Commands) > 0:
             if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
                 time.sleep(0.5)
