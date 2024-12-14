@@ -544,7 +544,7 @@ class Controller():
                 else:
                     return self.Robot_Position.Get_Start_Position(),True
             else:
-                if self.Robot_Position.Get_Scope_Position() == ():
+                if self.Robot_Position.Get_Scope_Position() == Now_Position:
                     self.Robot_Position.Update_Scope_Position(self.__Determine_Possible_NewPosition_To_Move())
             Scope_Pose = self.Robot_Position.Get_Scope_Position()
             print(f"Scope Pose:{Scope_Pose}")
@@ -794,15 +794,10 @@ class Main():
 
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
-        time.sleep(0.5)
+        time.sleep(0.2)
         if len(self.List_Commands) > 0:
             if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
                 time.sleep(0.5)
-        else:
-            pass
-
-        if self.Algorithm_Controller.Robot_Position.Get_Now_Position() == self.Algorithm_Controller.Robot_Position.Get_Scope_Position():
-            self.Algorithm_Controller.Robot_Position.Reset_Scope_Pose()
         else:
             pass
 
