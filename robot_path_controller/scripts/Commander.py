@@ -801,7 +801,7 @@ class Main():
         else:
             pass
 
-        if self.Algorithm_Controller.Robot_Position.Get_Now_Position == self.Algorithm_Controller.Robot_Position.Get_Scope_Position():
+        if self.Algorithm_Controller.Robot_Position.Get_Now_Position() == self.Algorithm_Controller.Robot_Position.Get_Scope_Position():
             self.Algorithm_Controller.Robot_Position.Reset_Scope_Pose()
         else:
             pass
