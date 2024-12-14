@@ -547,6 +547,7 @@ class Controller():
             print(f"Scope Pose:{Scope_Pose}")
             Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Scope_Pose,Penalty_Map=Now_Penalty_Map)
             if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 48 and Reponse == False: 
+                self.Robot_Position.Update_Scope_Position(Position = ())
                 self.Robot_Position.Update_Occupied_Position(Scope_Pose)
                 Valid_Position = False
             else:
