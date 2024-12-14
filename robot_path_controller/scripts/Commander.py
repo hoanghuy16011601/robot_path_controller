@@ -791,8 +791,9 @@ class Main():
 
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
-        if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
-            time.sleep(0.5)
+        if len(self.List_Commands) > 0:
+            if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
+                time.sleep(0.5)
         else:
             pass
 
