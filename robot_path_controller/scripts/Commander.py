@@ -272,7 +272,7 @@ class Position():
         self.SLAM_Now_Pose = self.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=self.Start_Position) 
         self.SLAM_Now_Angle = 0
         self.Target_Position = ()
-        self.Scope_Position = ()
+        self.Scope_Position = self.Start_Position
         self.Count_Check = 0
         self.Now_Angle = 0
         self.Target_Angle = 0
