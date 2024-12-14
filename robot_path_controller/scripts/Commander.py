@@ -851,7 +851,7 @@ class Main():
         self.Algorithm_Controller.Robot_Lidar.Valid_Value = False
         del self.List_Commands[:]
         self.__Stop_Robot()
-        time.sleep(1)
+        time.sleep(2)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.28 or Source == "Ultrasonic":
             if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
