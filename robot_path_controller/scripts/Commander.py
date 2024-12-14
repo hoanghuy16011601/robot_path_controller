@@ -485,7 +485,7 @@ class Controller():
         PointMap_For_Posible_Pose[X_Now][Y_Now] += 100000
         for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
             for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
-                Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose) + abs(X_Now - X_PointMap_For_Posible_Pose)*0.00  # prefer move in same X-Axis
+                Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose) + abs(X_Now - X_PointMap_For_Posible_Pose)*0.5  # prefer move in same X-Axis
                 
                 # Calculate Extra point base from direction of robot
                 if X_PointMap_For_Posible_Pose > X_Now:
@@ -801,7 +801,7 @@ class Main():
         else:
             pass
 
-        if self.Algorithm_Controller.Robot_Position.Get_Scope_Position() in self.Algorithm_Controller.Robot_Position.Get_Passed_Positions():
+        if self.Algorithm_Controller.Robot_Position.Get_Now_Position == self.Algorithm_Controller.Robot_Position.Get_Scope_Position():
             self.Algorithm_Controller.Robot_Position.Reset_Scope_Pose()
         else:
             pass
