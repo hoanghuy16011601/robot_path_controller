@@ -497,8 +497,9 @@ class Controller():
             "Y_Lower"   : 0,
         }
         PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
-        for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
-            for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
+        for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
+            print(f"Y = {Y_PointMap_For_Posible_Pose}")
+            for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
                 Position_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose)*0.1 + abs(X_Now - X_PointMap_For_Posible_Pose)*0.01  # prefer move in same X-Axis
                 
                 # Calculate Extra point base from direction of robot   
@@ -539,6 +540,7 @@ class Controller():
                     Optimize_Point = 0
 
                 PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Position_Point + Direction_Point + Optimize_Point
+                print(f"X = {X_PointMap_For_Posible_Pose}  -- Point = {PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]}")
         return PointMap_For_Posible_Pose
     
     def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position):
