@@ -461,13 +461,86 @@ class Controller():
         return Is_Cover_Full_Map
     
 
-    def Calculate_Accumulate_For_Optimize_Point(self,Occupied_Point,Accumulate_Point ,Type_Axis:str):
-        if Occupied_Point == 40:
-            Accumulate_Point[Type_Axis] += 0.01
-        elif Occupied_Point > 500:
-            Accumulate_Point[Type_Axis] += 0.3
-        else:
-            pass
+    def Calculate_Optimize_Point(self,Now_Position:tuple, PenaltyMap):
+        X_Now = Now_Position[0]
+        Y_Now = Now_Position[1]
+        Accumulate_Optimize_Point = {
+            "X"  : [],
+            "Y"  : [],
+        }
+        Optimize_Point_X_Lower = 0
+        Optimize_Point_X_Higher = 0
+        Optimize_Point_Y_Lower = 0
+        Optimize_Point_Y_Higher = 0
+        for Index in range(0,self.Penalty_Map.__Number_Grid_In_Edge_Map):
+            if Index < X_Now:
+                if Index == 0:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[X_Now-Index][Y_Now]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point = 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_X_Lower += Optimize_Point
+                Accumulate_Optimize_Point["X"].insert(0,Optimize_Point_X_Lower)
+
+            elif Index == X_Now:
+                Accumulate_Optimize_Point["X"].append(0)
+
+            else:
+                if Index - X_Now == 1:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[Index - 1][Y_Now]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point= 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_X_Higher += Optimize_Point
+                Accumulate_Optimize_Point["X"].append(Optimize_Point_X_Higher)
+
+            if Index < Y_Now:
+                if Index == 0:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[X_Now][Y_Now-Index]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point = 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_Y_Lower += Optimize_Point
+                Accumulate_Optimize_Point["Y"].insert(0,Optimize_Point_Y_Lower)
+
+            elif Index == Y_Now:
+                Accumulate_Optimize_Point["Y"].append(0)
+
+            else:
+                if Index - Y_Now == 1:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[X_Now][Index - 1]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point= 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_Y_Higher += Optimize_Point
+                Accumulate_Optimize_Point["X"].append(Optimize_Point_Y_Higher)
+        return Accumulate_Optimize_Point
+
+            
+
+            
+            
+
 
 
 
@@ -490,12 +563,7 @@ class Controller():
             Angle_Point = (0,0.03)
             Axis_Point = (0,1)
 
-        Accumulate_Optimize_Point = {
-            "X_Higher"  : 0,
-            "X_Lower"   : 0,
-            "Y_Higher"  : 0,
-            "Y_Lower"   : 0,
-        }
+        Axis_Optimize_Points = self.Calculate_Optimize_Point(Now_Position=Now_Position,PenaltyMap=PenaltyMap)
         PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
         for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
             print(f"Y = {Y_PointMap_For_Posible_Pose}")
@@ -507,34 +575,19 @@ class Controller():
                     PointMap_For_Posible_Pose[X_Now][Y_Now] = 100000
                     continue
                 elif Y_PointMap_For_Posible_Pose == Y_Now:
+                    Optimize_Point = Axis_Optimize_Points["X"][X_PointMap_For_Posible_Pose]
                     if X_PointMap_For_Posible_Pose > X_Now:
                         Direction_Point = Axis_Point[0]*Angle_Point[0] 
                         # Calculate optimize point to avoid move to covered position and decrese priority for position which is behind by object 
-                        Optimize_Point = Accumulate_Optimize_Point["X_Higher"]    
-                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
-                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
-                                                                    ,Type_Axis="X_Higher")
-
                     else:
                         Direction_Point = Axis_Point[0]*Angle_Point[1] 
-                        Optimize_Point = Accumulate_Optimize_Point["X_Lower"]
-                        Occupied_Point = PenaltyMap[X_Now-X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
-                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
-                                                                    ,Type_Axis="X_Lower")
 
                 elif X_PointMap_For_Posible_Pose == X_Now:
+                    Optimize_Point = Axis_Optimize_Points["Y"][Y_PointMap_For_Posible_Pose]
                     if Y_PointMap_For_Posible_Pose > Y_Now:
                         Direction_Point = Axis_Point[1]*Angle_Point[0]
-                        Optimize_Point = Accumulate_Optimize_Point["Y_Higher"]
-                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
-                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
-                                                                    ,Type_Axis="Y_Higher")
                     else:
                         Direction_Point = Axis_Point[1]*Angle_Point[1]
-                        Optimize_Point = Accumulate_Optimize_Point["Y_Lower"]
-                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_Now - Y_PointMap_For_Posible_Pose]
-                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
-                                                                    ,Type_Axis="Y_Lower")
                 else:
                     Direction_Point = 0
                     Optimize_Point = 0
