@@ -431,8 +431,9 @@ class Position():
         elif self.Now_Angle == 270:
             Direction_Bias = (0,1)
         
-        Ahead_Pose = self.Now_Position + Direction_Bias
-        return Ahead_Pose
+        X = self.Now_Position[0] + Direction_Bias[0]
+        Y = self.Now_Position[1] + Direction_Bias[1]
+        return (X,Y)
     
     
 
