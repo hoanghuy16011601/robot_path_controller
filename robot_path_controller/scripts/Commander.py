@@ -247,13 +247,13 @@ class Penalty_Map():
             Y_Axis = Position[1]
             self.Penalty_Map[X_Axis][Y_Axis] = 40
 
-    def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occuupied_Positions):
-        for X in self.Penalty_Map:
-            for Y in self.Penalty_Map[X]:
+    def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occupied_Positions):
+        for X in range(0,self.__Number_Cell_In_Edge_Map):
+            for Y in range(0,self.__Number_Cell_In_Edge_Map):
                 if self.Penalty_Map[X][Y] > 500:
                     self.Penalty_Map[X][Y] = 5000
     
-        for Position in Occuupied_Positions:
+        for Position in Occupied_Positions:
             self.Penalty_Map[Position[0]][Position[1]] = 5000
 
     def Update_Occupied_In_PenaltyMap(self,Occupied_Position):
@@ -568,7 +568,7 @@ class Controller():
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
         Valid_Position = False
         while Valid_Position == False:
-            print(f"Occupied Position {self.Robot_Position.Get_Occupied_Position()}")
+            # print(f"Occupied Position {self.Robot_Position.Get_Occupied_Position()}")
             Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
             if Reponse == True:
                 print("Robot has covered full map")
@@ -870,7 +870,6 @@ class Main():
         self.Command_Message.type = "Backward"
         self.Command_Message.value = Distance
         self.Publisher.publish(self.Command_Message)
-        print("Robot Backward")
 
     def __Stop_Robot(self):
         self.Command_Message.type = "Stop"
