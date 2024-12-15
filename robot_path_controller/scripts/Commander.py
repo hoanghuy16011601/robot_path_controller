@@ -248,7 +248,7 @@ class Penalty_Map():
             self.Penalty_Map[X_Axis][Y_Axis] = 40
 
     def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occupied_Positions):
-        for X in range(0,self.__Number_Cell_In_Edge_Map):
+        for X in range(0,self.__Number_Grid_In_Edge_Map):
             for Y in range(0,self.__Number_Cell_In_Edge_Map):
                 if self.Penalty_Map[X][Y] > 500:
                     self.Penalty_Map[X][Y] = 5000
