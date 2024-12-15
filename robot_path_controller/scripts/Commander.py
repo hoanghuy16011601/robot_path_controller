@@ -463,9 +463,9 @@ class Controller():
 
     def Calculate_Accumulate_For_Optimize_Point(self,Occupied_Point,Accumulate_Point ,Type_Axis:str):
         if Occupied_Point == 40:
-            Accumulate_Point[Type_Axis] += 0.05
+            Accumulate_Point[Type_Axis] += 0.01
         elif Occupied_Point > 500:
-            Accumulate_Point[Type_Axis] += 0.2
+            Accumulate_Point[Type_Axis] += 0.3
         else:
             pass
 
@@ -820,6 +820,12 @@ class Main():
         self.Flag_Position = False
         self.Is_Movement = False
 
+    def __Update_Position(self):
+        Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
+        self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Now_Position)
+        Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
+        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions)
+
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
         time.sleep(0.2)
@@ -844,6 +850,7 @@ class Main():
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
                 time.sleep(0.2)
+                self.__Update_Position()
                 self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
                 pass
@@ -912,7 +919,6 @@ class Main():
             self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Pose(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
-        self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
     def Lidar_Callback_Handler(self,msg:LaserScan):
         self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
