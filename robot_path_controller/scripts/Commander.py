@@ -540,7 +540,7 @@ class Controller():
                     Optimize_Point = 0
 
                 PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Position_Point + Direction_Point + Optimize_Point
-                print(f"X = {X_PointMap_For_Posible_Pose}  -- Point = {PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]}")
+                print(f"X = {X_PointMap_For_Posible_Pose}  -- Point = {PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]} = {Position_Point} + {Direction_Point} + {Optimize_Point} ")
         return PointMap_For_Posible_Pose
     
     def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position):
