@@ -472,7 +472,7 @@ class Controller():
         Optimize_Point_X_Higher = 0
         Optimize_Point_Y_Lower = 0
         Optimize_Point_Y_Higher = 0
-        for Index in range(0,self.Penalty_Map.__Number_Grid_In_Edge_Map):
+        for Index in range(0,len(PenaltyMap)):
             if Index < X_Now:
                 if Index == 0:
                     Optimize_Point = 0
