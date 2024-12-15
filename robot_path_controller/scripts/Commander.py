@@ -533,7 +533,7 @@ class Controller():
                     else:
                         Optimize_Point = 0
                 Optimize_Point_Y_Higher += Optimize_Point
-                Accumulate_Optimize_Point["X"].append(Optimize_Point_Y_Higher)
+                Accumulate_Optimize_Point["Y"].append(Optimize_Point_Y_Higher)
         return Accumulate_Optimize_Point
 
             
