@@ -111,7 +111,7 @@ class Dijkstra():
             Grid_State_End = self.__Find_Lowest_Penalty_Of_Grid_Is_Not_Found(Target_Grid=End_Grid)
             self.__Update_Status_Of_Grid_Planning(Grid=Grid_State_End,Status="Found")
         Path_Planning = self.__Find_Path_Of_Found_Grid(Found_Grid=Grid_State_End)
-        print(f"Path Planning: {Path_Planning}")
+        # print(f"Path Planning: {Path_Planning}")
         return Path_Planning
 
 
@@ -558,6 +558,7 @@ class Controller():
     def __Determine_Possible_NewPosition_To_Move(self,Position, Penalty_Map):
         PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
         New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose, Now_Position= Position)
+        print(PointMap_For_Posible_Pose)
         return New_Pose
     
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
@@ -886,13 +887,14 @@ class Main():
         self.__Stop_Robot()
         time.sleep(2)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
-        if Distances[0] < 0.28 or Source == "Ultrasonic":
+        if Distances[0] < 0.35 or Source == "Ultrasonic":
             if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
                 Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
             else:
                 Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Ahead_Position()
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
+            print(f"Occupied Position : {Occupied_Postion}")
         self.__Robot_Backward(Distance = 20)
         time.sleep(1)
 
