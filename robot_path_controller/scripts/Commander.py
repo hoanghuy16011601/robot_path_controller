@@ -248,6 +248,11 @@ class Penalty_Map():
             self.Penalty_Map[X_Axis][Y_Axis] = 40
 
     def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occuupied_Positions):
+        for X in self.Penalty_Map:
+            for Y in self.Penalty_Map[X]:
+                if self.Penalty_Map[X][Y] > 500:
+                    self.Penalty_Map[X][Y] = 5000
+    
         for Position in Occuupied_Positions:
             self.Penalty_Map[Position[0]][Position[1]] = 5000
 
@@ -461,54 +466,84 @@ class Controller():
         return Is_Cover_Full_Map
     
 
+    def Calculate_Accumulate_For_Optimize_Point(self,Occupied_Point,Accumulate_Point ,Type_Axis:str):
+        if Occupied_Point == 40:
+            Accumulate_Point[Type_Axis] += 0.05
+        elif Occupied_Point == 5000:
+            Accumulate_Point[Type_Axis] += 0.2
+        else:
+            pass
+
+
+
     def __Calculate_PointMap_To_Choose_Pose_For_Movement(self, PenaltyMap:dict, Now_Position:tuple):
-        List_Free = []
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         X_Now = Now_Position[0]
         Y_Now = Now_Position[1]
         ## Create penalty map for possible position finding, too far to X_Now (in X-Axis) too more penalty point 
         if Now_Angle == 0:
-            Direction_Point = (1,0)
-            Bias = (1,0)
+            Angle_Point = (0,0.03)
+            Axis_Point = (1,0)
         elif Now_Angle == 180:
-            Direction_Point = (1,0)
-            Bias = (0,1)
+            Angle_Point = (0.03,0)
+            Axis_Point = (1,0)
         elif Now_Angle == 90:
-            Direction_Point = (0,1)
-            Bias = (0,1)
+            Angle_Point = (0.03,0)
+            Axis_Point = (0,1)
         else:
-            Direction_Point = (0,1)
-            Bias = (1,0)
+            Angle_Point = (0,0.03)
+            Axis_Point = (0,1)
 
+        Accumulate_Optimize_Point = {
+            "X_Higher"  : 0,
+            "X_Lower"   : 0,
+            "Y_Higher"  : 0,
+            "Y_Lower"   : 0,
+        }
         PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
-        PointMap_For_Posible_Pose[X_Now][Y_Now] += 100000
         for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
             for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
-                Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose) + abs(X_Now - X_PointMap_For_Posible_Pose)*0.2  # prefer move in same X-Axis
+                Position_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose)*0.1 + abs(X_Now - X_PointMap_For_Posible_Pose)*0.01  # prefer move in same X-Axis
                 
-                # Calculate Extra point base from direction of robot
-                if X_PointMap_For_Posible_Pose > X_Now:
-                    X_Weight_Point =(X_PointMap_For_Posible_Pose - X_Now)/25 - Bias[0]
-                else:
-                    X_Weight_Point = (X_Now - X_PointMap_For_Posible_Pose)/25 - Bias[1]
-                
-                if Y_PointMap_For_Posible_Pose > Y_Now:
-                    Y_Weight_Point = (Y_PointMap_For_Posible_Pose - Y_Now)/25 - Bias[0]
-                else:
-                    Y_Weight_Point = (Y_Now - Y_PointMap_For_Posible_Pose)/25 - Bias[1] 
+                # Calculate Extra point base from direction of robot   
+                if X_PointMap_For_Posible_Pose == X_Now and Y_PointMap_For_Posible_Pose == Y_Now:
+                    PointMap_For_Posible_Pose[X_Now][Y_Now] = 100000
+                    continue
+                elif Y_PointMap_For_Posible_Pose == Y_Now:
+                    if X_PointMap_For_Posible_Pose > X_Now:
+                        Direction_Point = Axis_Point[0]*Angle_Point[0] 
+                        # Calculate optimize point to avoid move to covered position and decrese priority for position which is behind by object 
+                        Optimize_Point = Accumulate_Optimize_Point["X_Higher"]    
+                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
+                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
+                                                                    ,Type_Axis="X_Higher")
 
+                    else:
+                        Direction_Point = Axis_Point[0]*Angle_Point[1] 
+                        Optimize_Point = Accumulate_Optimize_Point["X_Lower"]
+                        Occupied_Point = PenaltyMap[11-X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
+                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
+                                                                    ,Type_Axis="X_Lower")
 
-                Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
-
-                if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 16:
-                    List_Free.append((X_PointMap_For_Posible_Pose,Y_PointMap_For_Posible_Pose))
-                    
-                if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 35:
-                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 50 + Penalty_Point + Extra_point
+                elif X_PointMap_For_Posible_Pose == X_Now:
+                    if Y_PointMap_For_Posible_Pose > Y_Now:
+                        Direction_Point = Axis_Point[1]*Angle_Point[0]
+                        Optimize_Point = Accumulate_Optimize_Point["Y_Higher"]
+                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
+                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
+                                                                    ,Type_Axis="Y_Higher")
+                    else:
+                        Direction_Point = Axis_Point[1]*Angle_Point[1]
+                        Optimize_Point = Accumulate_Optimize_Point["Y_Lower"]
+                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
+                        self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
+                                                                    ,Type_Axis="Y_Lower")
                 else:
-                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
-        print(f"List Free Position {List_Free}")
+                    Direction_Point = 0
+                    Optimize_Point = 0
+
+                PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Position_Point + Direction_Point + Optimize_Point
         return PointMap_For_Posible_Pose
     
     def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position):
@@ -525,9 +560,7 @@ class Controller():
                         New_Pose = (X_Check,Y_Check)
         return New_Pose
 
-    def __Determine_Possible_NewPosition_To_Move(self):
-        Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-        Position = self.Robot_Position.Get_Now_Position()
+    def __Determine_Possible_NewPosition_To_Move(self,Position, Penalty_Map):
         PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
         New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose, Now_Position= Position)
         return New_Pose
@@ -545,7 +578,7 @@ class Controller():
                     return self.Robot_Position.Get_Start_Position(),True
             else:
                 if self.Robot_Position.Get_Scope_Position() == Now_Position:
-                    self.Robot_Position.Update_Scope_Position(self.__Determine_Possible_NewPosition_To_Move())
+                    self.Robot_Position.Update_Scope_Position(self.__Determine_Possible_NewPosition_To_Move(Position= Now_Position, Penalty_Map=Now_Penalty_Map))
             Scope_Pose = self.Robot_Position.Get_Scope_Position()
             print(f"Scope Pose:{Scope_Pose}")
             Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Scope_Pose,Penalty_Map=Now_Penalty_Map)
