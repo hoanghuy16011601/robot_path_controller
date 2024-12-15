@@ -479,7 +479,7 @@ class Controller():
                 else:
                     Occupied_Point = PenaltyMap[X_Now-Index][Y_Now]
                     if Occupied_Point == 40:
-                        Optimize_Point = 0.01
+                        Optimize_Point = 0.02
                     elif Occupied_Point > 500:
                         Optimize_Point = 0.2
                     else:
@@ -627,7 +627,8 @@ class Controller():
                 else:
                     return self.Robot_Position.Get_Start_Position(),True
             else:
-                if self.Robot_Position.Get_Scope_Position() == Now_Position:
+                Scope_Position = self.Robot_Position.Get_Scope_Position() 
+                if Scope_Position == Now_Position or Scope_Position == ():
                     self.Robot_Position.Update_Scope_Position(self.__Determine_Possible_NewPosition_To_Move(Position= Now_Position, Penalty_Map=Now_Penalty_Map))
             Scope_Pose = self.Robot_Position.Get_Scope_Position()
             print(f"Scope Pose:{Scope_Pose}")
