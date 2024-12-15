@@ -248,11 +248,6 @@ class Penalty_Map():
             self.Penalty_Map[X_Axis][Y_Axis] = 40
 
     def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occupied_Positions):
-        for X in range(0,self.__Number_Grid_In_Edge_Map):
-            for Y in range(0,self.__Number_Grid_In_Edge_Map):
-                if self.Penalty_Map[X][Y] > 500:
-                    self.Penalty_Map[X][Y] = 5000
-    
         for Position in Occupied_Positions:
             self.Penalty_Map[Position[0]][Position[1]] = 5000
 
@@ -469,7 +464,7 @@ class Controller():
     def Calculate_Accumulate_For_Optimize_Point(self,Occupied_Point,Accumulate_Point ,Type_Axis:str):
         if Occupied_Point == 40:
             Accumulate_Point[Type_Axis] += 0.05
-        elif Occupied_Point == 5000:
+        elif Occupied_Point > 500:
             Accumulate_Point[Type_Axis] += 0.2
         else:
             pass
@@ -522,7 +517,7 @@ class Controller():
                     else:
                         Direction_Point = Axis_Point[0]*Angle_Point[1] 
                         Optimize_Point = Accumulate_Optimize_Point["X_Lower"]
-                        Occupied_Point = PenaltyMap[11-X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
+                        Occupied_Point = PenaltyMap[X_Now-X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
                         self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
                                                                     ,Type_Axis="X_Lower")
 
@@ -536,7 +531,7 @@ class Controller():
                     else:
                         Direction_Point = Axis_Point[1]*Angle_Point[1]
                         Optimize_Point = Accumulate_Optimize_Point["Y_Lower"]
-                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose]
+                        Occupied_Point = PenaltyMap[X_PointMap_For_Posible_Pose][Y_Now - Y_PointMap_For_Posible_Pose]
                         self.Calculate_Accumulate_For_Optimize_Point(Occupied_Point=Occupied_Point,Accumulate_Point=Accumulate_Optimize_Point
                                                                     ,Type_Axis="Y_Lower")
                 else:
