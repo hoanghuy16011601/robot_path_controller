@@ -747,11 +747,15 @@ class Controller():
             })
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : 15
             })
             List_Commands.append({
                 "Type"  : "Rotate-Right",
                 "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 15
             })
 
         elif Left_Distance > 0.45:
@@ -761,11 +765,15 @@ class Controller():
             })
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : 15
             })
             List_Commands.append({
                 "Type"  : "Rotate-Left",
                 "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 15
             })
 
         else:
