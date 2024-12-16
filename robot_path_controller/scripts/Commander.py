@@ -914,7 +914,6 @@ class Main():
 
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
-        time.sleep(0.2)
         if len(self.List_Commands) > 0:
             if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
                 time.sleep(0.5)
@@ -935,7 +934,6 @@ class Main():
         if len(self.List_Commands) ==0:
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
-                time.sleep(0.2)
                 self.__Update_Position(Type="Passed")
                 self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
