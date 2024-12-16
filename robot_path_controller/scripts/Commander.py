@@ -412,7 +412,7 @@ class Position():
         else:
             pass
 
-    def Get_Occupied_Position(self):
+    def Get_Occupied_Positions(self):
         return self.Occupied_Positions
 
     def Update_Occupied_Position(self,Position):
@@ -617,7 +617,7 @@ class Controller():
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
         Valid_Position = False
         while Valid_Position == False:
-            # print(f"Occupied Position {self.Robot_Position.Get_Occupied_Position()}")
+            # print(f"Occupied Position {self.Robot_Position.Get_Occupied_Positions()}")
             Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
             if Reponse == True:
                 print("Robot has covered full map")
@@ -883,11 +883,17 @@ class Main():
         self.Flag_Position = False
         self.Is_Movement = False
 
-    def __Update_Position(self):
-        Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
-        self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Now_Position)
-        Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
-        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions)
+    def __Update_Position(self,Type:str):
+        if Type == "Passed":
+            Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
+            self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Now_Position)
+            Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
+            self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions)
+        elif Type == "Occupied":
+            Occupied_Positions = self.Algorithm_Controller.Robot_Position.Get_Occupied_Positions()
+            self.Algorithm_Controller.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
+        else:
+            pass
 
     def __On_Task_Is_Done(self):
         self.Is_Movement = False
@@ -913,7 +919,7 @@ class Main():
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
                 time.sleep(0.2)
-                self.__Update_Position()
+                self.__Update_Position(Type="Passed")
                 self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
                 pass
@@ -957,6 +963,7 @@ class Main():
                 Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Ahead_Position()
                 self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
             print(f"Occupied Position : {Occupied_Postion}")
+            self.__Update_Position(Type="Occupied")
         self.__Robot_Backward(Distance = 20)
         time.sleep(1)
 
@@ -964,7 +971,7 @@ class Main():
     def Map_Callback_Handler(self,data):
         self.Flag_Map = True
         Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
-        Occupied_Positions = self.Algorithm_Controller.Robot_Position.Get_Occupied_Position()
+        Occupied_Positions = self.Algorithm_Controller.Robot_Position.Get_Occupied_Positions()
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
         self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions=Passed_Positions)
         self.Algorithm_Controller.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
