@@ -650,6 +650,8 @@ class Controller():
             if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 48 and Reponse == False: 
                 self.Robot_Position.Update_Scope_Position(Position = ())
                 self.Robot_Position.Update_Occupied_Position(Scope_Pose)
+                Occupied_Positions = self.Robot_Position.Get_Occupied_Positions()
+                self.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
                 Valid_Position = False
             else:
                 Valid_Position = True
