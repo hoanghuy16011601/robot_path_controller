@@ -991,8 +991,8 @@ class Main():
                 pass                                                ## Waiting for setup finish
         elif Message.data == "Movement_Okay" or Message.data == "Rotation_Okay":
             self.__On_Task_Is_Done()
-        # elif Message.data == "Object_Detected":
-        #     self.Object_Detected(Source = "Ultrasonic")
+        elif Message.data == "Object_Detected":
+            self.Object_Detected(Source = "Ultrasonic")
         else:   
             pass # Reserve 
 
