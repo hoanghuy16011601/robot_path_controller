@@ -435,6 +435,21 @@ class Position():
         Y = self.Now_Position[1] + Direction_Bias[1]
         return (X,Y)
     
+    def Get_Behind_Position(self):
+        if self.Now_Angle == 0:
+            Direction_Bias = (1,0)
+        elif self.Now_Angle == 90:
+            Direction_Bias = (0,-1)
+        elif self.Now_Angle == 180:
+            Direction_Bias = (-1,0)
+        elif self.Now_Angle == 270:
+            Direction_Bias = (0,1)
+        
+        X = self.Now_Position[0] - Direction_Bias[0]
+        Y = self.Now_Position[1] - Direction_Bias[1]
+        return (X,Y)
+
+    
     
 
 
@@ -956,13 +971,15 @@ class Main():
         time.sleep(2)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.35 or Source == "Ultrasonic":
-            if self.Algorithm_Controller.Robot_Position.Get_Target_Position() != self.Algorithm_Controller.Robot_Position.Get_Now_Position():
-                Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
-                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
+            Target_Position = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
+            Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
+            if Now_Position != Target_Position:
+                Occupied_Postion = Target_Position
             else:
                 Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Ahead_Position()
-                self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
+                self.__Update_Position(Type="Passed")
             print(f"Occupied Position : {Occupied_Postion}")
+            self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
             self.__Update_Position(Type="Occupied")
         self.__Robot_Backward(Distance = 20)
         time.sleep(1)
