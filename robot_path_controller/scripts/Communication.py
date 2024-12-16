@@ -33,9 +33,11 @@ class STM32_Message_Controller():
             Data = f"{Command_Type}/{Command_Value}\0"
         elif (Command_Type == "Rotate-Right" or Command_Type == "Rotate-Left"):
             Data = f"{Command_Type}/{Command_Value}\0"
+        elif (Command_Type == "Stop"):
+            Data = f"{Command_Type}\0"
         else:
             pass
-        # print(Data)
+        # print(f"Command {Data}")
         self.Serial.write(Data.encode("utf-8"))
 
     def Ros_Subcribe(self):
@@ -44,7 +46,7 @@ class STM32_Message_Controller():
 
 
     def Start(self):
-        Port_Name = "/dev/ttyUSB1"  # Replace with your port
+        Port_Name = "/dev/ttyUSB0"  # Replace with your port
         BaudRate = 57600
         try:# Open the serial port
             self.Serial = serial.Serial(Port_Name, BaudRate, timeout=1)

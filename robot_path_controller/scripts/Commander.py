@@ -5,6 +5,7 @@ import copy
 from std_msgs.msg import String 
 from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import LaserScan
 from robot_path_controller.msg import Command
 import time
 
@@ -110,8 +111,101 @@ class Dijkstra():
             Grid_State_End = self.__Find_Lowest_Penalty_Of_Grid_Is_Not_Found(Target_Grid=End_Grid)
             self.__Update_Status_Of_Grid_Planning(Grid=Grid_State_End,Status="Found")
         Path_Planning = self.__Find_Path_Of_Found_Grid(Found_Grid=Grid_State_End)
-        print(Path_Planning)
+        # print(f"Path Planning: {Path_Planning}")
         return Path_Planning
+
+
+class Lidar():
+    def __init__(self):
+        self.Valid_Value = False
+        self.Angle_Increment = 0.47368  # degrees
+        self.Head_Distance = 10
+        self.Head_Count_Check = 0
+        self.Last_Head_Distance = 0
+
+        self.Right_Distance = 10
+        self.Right_Count_Check = 0
+        self.Last_Right_Distance = 0
+        
+        self.Back_Distance = 10
+        self.Back_Count_Check = 0
+        self.Last_Back_Distance = 0
+
+        self.Left_Distance = 10
+        self.Left_Count_Check = 0
+        self.Last_Left_Distance = 0
+
+    def Get_Distances(self):
+        return (self.Head_Distance ,self.Right_Distance ,self.Back_Distance ,self.Left_Distance )
+    
+    def Convert_To_Sides_Distance(self,msg:LaserScan):
+        Length_Message = len(msg.ranges)
+        Head_Index = Length_Message // 2
+        Right_Index = Length_Message // 4
+        Back_Index = 0
+        Left_Index = (Length_Message*3) //4
+        Index_Parameter = 60
+        Head_Distance = 10
+        Right_Distance = 10
+        Back_Distance = 10
+        Left_Distance =10
+        
+        for Index in range(Head_Index-Index_Parameter,Head_Index + Index_Parameter + 10):
+            if msg.ranges[Index] < Head_Distance:
+                Head_Distance = msg.ranges[Index]
+
+        for Index in range(Right_Index -Index_Parameter, Right_Index + Index_Parameter + 10):
+            if msg.ranges[Index] < Right_Distance:
+                Right_Distance = msg.ranges[Index]
+
+        for Index in range(Left_Index -Index_Parameter, Left_Index + Index_Parameter):
+            if msg.ranges[Index] < Left_Distance:
+                Left_Distance = msg.ranges[Index]
+        
+        for Index in range(Back_Index, Back_Index + Index_Parameter):
+            if msg.ranges[Index] < Back_Distance:
+                Back_Distance = msg.ranges[Index]
+
+        for Index in range(Length_Message-Index_Parameter, Length_Message):
+            if msg.ranges[Index] < Back_Distance:
+                Back_Distance = msg.ranges[Index]
+        
+        if abs(Head_Distance - self.Last_Head_Distance) <= 0.1:
+            self.Head_Count_Check += 1
+            if self.Head_Count_Check == 2:
+                self.Valid_Value = True
+                self.Head_Distance = Head_Distance
+                self.Head_Count_Check = 0
+        else:
+            self.Head_Count_Check = 0
+        self.Last_Head_Distance = Head_Distance
+
+        if abs(Right_Distance - self.Last_Right_Distance) <= 0.1:
+            self.Right_Count_Check += 1
+            if self.Right_Count_Check == 2:
+                self.Right_Distance = Right_Distance
+                self.Right_Count_Check = 0
+        else:
+            self.Right_Count_Check = 0
+        self.Right_Distance = Right_Distance
+
+        if abs(Back_Distance - self.Last_Back_Distance) <= 0.1:
+            self.Back_Count_Check += 1
+            if self.Back_Count_Check == 2:
+                self.Back_Distance = Back_Distance
+                self.Back_Count_Check = 0
+        else:
+            self.Back_Count_Check = 0
+        self.Back_Distance = Back_Distance
+
+        if abs(Left_Distance - self.Last_Left_Distance) <= 0.1:
+            self.Left_Count_Check += 1
+            if self.Left_Count_Check == 2:
+                self.Left_Distance = Left_Distance
+                self.Left_Count_Check = 0
+        else:
+            self.Left_Count_Check = 0
+        self.Last_Left_Distance = Left_Distance
 
 
 class Penalty_Map():
@@ -132,26 +226,33 @@ class Penalty_Map():
                 self.Penalty_Map[X_Axis].append(0)
     
     def Convert_Occupancy_Map_To_Penalty_Map(self,map:list):
-        for X in range(0,self.__Number_Cell_In_Edge_Map):
-            for Y in range(0,self.__Number_Cell_In_Edge_Map):
+        for Y in range(0,self.__Number_Cell_In_Edge_Map):
+            for X in range(0,self.__Number_Cell_In_Edge_Map):
                 ## Check reset available
                 X_In_Penalty_Map = int(X/self.__Number_Cel_In_Edge_Grid)
                 Y_In_Penalty_Map = int(Y/self.__Number_Cel_In_Edge_Grid)
                 if (X % self.__Number_Cel_In_Edge_Grid == 0) and (Y % self.__Number_Cel_In_Edge_Grid == 0):
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] = 0
                 ## Calculate Penalty Point for map
-                if map.data[100*X + Y] == 0:                                             ## blank cell
+                if map.data[100*Y + X] == 0:                                             ## blank cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 1          
-                elif map.data[100*X + Y] == -1:                                          ## unexplored cell
+                elif map.data[100*Y + X] == -1:                                          ## unexplored cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 5
                 else:                                                                    ## occupied cell
                     self.Penalty_Map[X_In_Penalty_Map][Y_In_Penalty_Map] += 500
 
-    def Calcutate_Penalty_Map_With_Passed_Position(self,Passed_Positions:list):
+    def Calcutate_Penalty_Map_With_Passed_Positions(self,Passed_Positions:list):
         for Position in Passed_Positions:
             X_Axis = Position[0]
             Y_Axis = Position[1]
             self.Penalty_Map[X_Axis][Y_Axis] = 40
+
+    def Calculate_Penalty_Map_With_With_Occupied_Positions(self,Occupied_Positions):
+        for Position in Occupied_Positions:
+            self.Penalty_Map[Position[0]][Position[1]] = 5000
+
+    def Update_Occupied_In_PenaltyMap(self,Occupied_Position):
+        self.Penalty_Map[Occupied_Position[0]][Occupied_Position[1]] = 5000
     
     def Get_Penalty_Map(self):
         return self.Penalty_Map
@@ -168,12 +269,14 @@ class Position():
         self.Passed_Positions = [self.Start_Position]
         self.Now_Position = (self.Start_Position)
         self.Last_Position = self.Start_Position
-        self.SLAM_Now_Pose = () 
+        self.SLAM_Now_Pose = self.Convert_PenaltyMap_Position_To_SLAM_Pose(PenaltyMap_Position=self.Start_Position) 
         self.SLAM_Now_Angle = 0
         self.Target_Position = ()
+        self.Scope_Position = self.Start_Position
         self.Count_Check = 0
         self.Now_Angle = 0
         self.Target_Angle = 0
+        self.Occupied_Positions = []
 
     
     def Convert_PenaltyMap_Position_To_SLAM_Pose(self, PenaltyMap_Position:tuple):
@@ -185,9 +288,9 @@ class Position():
 
         return (SLAM_Pose_X,SLAM_Pose_Y)
     
-    def __Convert_SLAM_Pose_To_PenaltyMap_Position(self,SLAM_Pose:tuple):
-        SLAM_Pose_X = SLAM_Pose[0]
-        SLAM_Pose_Y = SLAM_Pose[1]
+    def __Convert_SLAM_Pose_To_PenaltyMap_Position(self,Raw_SLAM_Pose:tuple):
+        SLAM_Pose_X = Raw_SLAM_Pose[0]
+        SLAM_Pose_Y = Raw_SLAM_Pose[1]
 
         if SLAM_Pose_X > 0:
             Position_X = (int)((SLAM_Pose_X + 0.2)/0.4) + 12
@@ -200,9 +303,22 @@ class Position():
             Position_Y = (int)((SLAM_Pose_Y-0.2)/0.4) + 12
         
         return (Position_X,Position_Y)
+    
+    def __Is_Middle_Position_In_SLAM_Pose(self,SLAM_Pose, Raw_SLAM_Pose):
+        Raw_Middle_Pose_X = (SLAM_Pose[0] - 12)*0.4  
+        Raw_Middle_Pose_Y = (SLAM_Pose[1] - 12)*0.4
+        if ((Raw_Middle_Pose_X -0.15 <= Raw_SLAM_Pose[0]) and (Raw_SLAM_Pose[0] <= Raw_Middle_Pose_X + 0.15)):
+            if ((Raw_Middle_Pose_Y -0.15 <= Raw_SLAM_Pose[1]) and (Raw_SLAM_Pose[1] <= Raw_Middle_Pose_Y + 0.15)):
+                Is_Middle_Position =True
+            else:
+                Is_Middle_Position = False
+        else:
+            Is_Middle_Position = False
+        return Is_Middle_Position
+            
 
     def Determine_Now_Position(self,SLAM_Pose:tuple):
-        Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(SLAM_Pose=SLAM_Pose)
+        Check_Position = self.__Convert_SLAM_Pose_To_PenaltyMap_Position(Raw_SLAM_Pose=SLAM_Pose)
 
         if Check_Position == self.Last_Position:
             self.Count_Check +=1
@@ -265,6 +381,15 @@ class Position():
     
     def Update_Target_Position(self,Position):
         self.Target_Position = Position
+
+    def Get_Scope_Position(self):
+        return self.Scope_Position
+    
+    def Reset_Scope_Pose(self):
+        self.Scope_Position = ()
+    
+    def Update_Scope_Position(self,Position):
+        self.Scope_Position = Position
     
     def Get_Now_Angle(self):
         return self.Now_Angle
@@ -287,16 +412,57 @@ class Position():
         else:
             pass
 
+    def Get_Occupied_Positions(self):
+        return self.Occupied_Positions
+
+    def Update_Occupied_Position(self,Position):
+        if Position not in self.Occupied_Positions:
+            self.Occupied_Positions.append(Position)
+        else:
+            pass
+
+    def Get_Ahead_Position(self):
+        if self.Now_Angle == 0:
+            Direction_Bias = (1,0)
+        elif self.Now_Angle == 90:
+            Direction_Bias = (0,-1)
+        elif self.Now_Angle == 180:
+            Direction_Bias = (-1,0)
+        elif self.Now_Angle == 270:
+            Direction_Bias = (0,1)
+        
+        X = self.Now_Position[0] + Direction_Bias[0]
+        Y = self.Now_Position[1] + Direction_Bias[1]
+        return (X,Y)
+    
+    def Get_Behind_Position(self):
+        if self.Now_Angle == 0:
+            Direction_Bias = (1,0)
+        elif self.Now_Angle == 90:
+            Direction_Bias = (0,-1)
+        elif self.Now_Angle == 180:
+            Direction_Bias = (-1,0)
+        elif self.Now_Angle == 270:
+            Direction_Bias = (0,1)
+        
+        X = self.Now_Position[0] - Direction_Bias[0]
+        Y = self.Now_Position[1] - Direction_Bias[1]
+        return (X,Y)
+
+    
+    
+
 
 class Controller():
-    def __init__(self,Penalty_Map:Penalty_Map,Robot_Position:Position, Path_Planning:Dijkstra) -> None:
+    def __init__(self,Penalty_Map:Penalty_Map,Robot_Position:Position, Path_Planning:Dijkstra, Robot_Lidar:Lidar) -> None:
         self.Penalty_Map = Penalty_Map
         self.Robot_Position = Robot_Position
         self.Path_Planning = Path_Planning
+        self.Robot_Lidar = Robot_Lidar
         self.Finish_Flag = False
 
     def Check_Is_Cover_Full_Map(self, Penalty_Map:dict):
-        Lowest_Point = 40
+        Lowest_Point = 24
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map() 
         for X in range(0,Length_Axis):
             for Y in range(0,Length_Axis):
@@ -304,63 +470,147 @@ class Controller():
                     Lowest_Point = Penalty_Map[X][Y]
                 else:
                     pass
-        if Lowest_Point < 40:
+        if Lowest_Point < 24:
             Is_Cover_Full_Map = False
         else:
             Is_Cover_Full_Map = True
         return Is_Cover_Full_Map
     
 
+    def Calculate_Optimize_Point(self,Now_Position:tuple, PenaltyMap):
+        X_Now = Now_Position[0]
+        Y_Now = Now_Position[1]
+        Accumulate_Optimize_Point = {
+            "X"  : [],
+            "Y"  : [],
+        }
+        Optimize_Point_X_Lower = 0
+        Optimize_Point_X_Higher = 0
+        Optimize_Point_Y_Lower = 0
+        Optimize_Point_Y_Higher = 0
+        for Index in range(0,len(PenaltyMap)):
+            if Index < X_Now:
+                if Index == 0:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[X_Now-Index][Y_Now]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.02
+                    elif Occupied_Point > 500:
+                        Optimize_Point = 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_X_Lower += Optimize_Point
+                Accumulate_Optimize_Point["X"].insert(0,Optimize_Point_X_Lower)
+
+            elif Index == X_Now:
+                Accumulate_Optimize_Point["X"].append(0)
+
+            else:
+                if Index - X_Now == 1:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[Index - 1][Y_Now]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point= 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_X_Higher += Optimize_Point
+                Accumulate_Optimize_Point["X"].append(Optimize_Point_X_Higher)
+
+            if Index < Y_Now:
+                if Index == 0:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[X_Now][Y_Now-Index]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point = 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_Y_Lower += Optimize_Point
+                Accumulate_Optimize_Point["Y"].insert(0,Optimize_Point_Y_Lower)
+
+            elif Index == Y_Now:
+                Accumulate_Optimize_Point["Y"].append(0)
+
+            else:
+                if Index - Y_Now == 1:
+                    Optimize_Point = 0
+                else:
+                    Occupied_Point = PenaltyMap[X_Now][Index - 1]
+                    if Occupied_Point == 40:
+                        Optimize_Point = 0.01
+                    elif Occupied_Point > 500:
+                        Optimize_Point= 0.2
+                    else:
+                        Optimize_Point = 0
+                Optimize_Point_Y_Higher += Optimize_Point
+                Accumulate_Optimize_Point["Y"].append(Optimize_Point_Y_Higher)
+        return Accumulate_Optimize_Point
+
+            
+
+            
+            
+
+
+
+
     def __Calculate_PointMap_To_Choose_Pose_For_Movement(self, PenaltyMap:dict, Now_Position:tuple):
-        List_Free = []
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Now_Angle = self.Robot_Position.Get_Now_Angle()
         X_Now = Now_Position[0]
         Y_Now = Now_Position[1]
         ## Create penalty map for possible position finding, too far to X_Now (in X-Axis) too more penalty point 
         if Now_Angle == 0:
-            Direction_Point = (1,0)
-            Bias = (1,0)
+            Angle_Point = (0,0.03)
+            Axis_Point = (1,0)
         elif Now_Angle == 180:
-            Direction_Point = (1,0)
-            Bias = (0,1)
+            Angle_Point = (0.03,0)
+            Axis_Point = (1,0)
         elif Now_Angle == 90:
-            Direction_Point = (0,-1)
-            Bias = (0,1)
+            Angle_Point = (0.03,0)
+            Axis_Point = (0,1)
         else:
-            Direction_Point = (0,1)
-            Bias = (1,0)
+            Angle_Point = (0,0.03)
+            Axis_Point = (0,1)
 
+        Axis_Optimize_Points = self.Calculate_Optimize_Point(Now_Position=Now_Position,PenaltyMap=PenaltyMap)
         PointMap_For_Posible_Pose = copy.deepcopy(PenaltyMap)
-        PointMap_For_Posible_Pose[X_Now][Y_Now] += 100000
-        for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
-            for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
-                Penalty_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose) + abs(X_Now - X_PointMap_For_Posible_Pose)*0.03  # prefer move in same X-Axis
+        for Y_PointMap_For_Posible_Pose in range(0,Length_Axis):
+            for X_PointMap_For_Posible_Pose in range(0,Length_Axis):
+                Position_Point = abs(Y_Now - Y_PointMap_For_Posible_Pose)*0.1 + abs(X_Now - X_PointMap_For_Posible_Pose)*0.01  # prefer move in same X-Axis
                 
-                # Calculate Extra point base from direction of robot
-                if X_PointMap_For_Posible_Pose > X_Now:
-                    X_Weight_Point =(X_PointMap_For_Posible_Pose - X_Now)/25 - Bias[0]
-                else:
-                    X_Weight_Point = (X_Now - X_PointMap_For_Posible_Pose)/25 - Bias[1]
-                
-                if Y_PointMap_For_Posible_Pose > Y_Now:
-                    Y_Weight_Point = (Y_PointMap_For_Posible_Pose - Y_Now)/25 - Bias[0]
-                else:
-                    Y_Weight_Point = (Y_Now - Y_PointMap_For_Posible_Pose)/25 - Bias[1] 
+                # Calculate Extra point base from direction of robot   
+                if X_PointMap_For_Posible_Pose == X_Now and Y_PointMap_For_Posible_Pose == Y_Now:
+                    PointMap_For_Posible_Pose[X_Now][Y_Now] = 100000
+                    continue
+                elif Y_PointMap_For_Posible_Pose == Y_Now:
+                    Optimize_Point = Axis_Optimize_Points["X"][X_PointMap_For_Posible_Pose]
+                    if X_PointMap_For_Posible_Pose > X_Now:
+                        Direction_Point = Axis_Point[0]*Angle_Point[0] 
+                        # Calculate optimize point to avoid move to covered position and decrese priority for position which is behind by object 
+                    else:
+                        Direction_Point = Axis_Point[0]*Angle_Point[1] 
 
-
-                Extra_point = X_Weight_Point*Direction_Point[0] + Y_Weight_Point*Direction_Point[1]
-
-                if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 16:
-                    List_Free.append((X_PointMap_For_Posible_Pose,Y_PointMap_For_Posible_Pose))
-                    
-                if PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] == 35:
-                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += 20 + Penalty_Point + Extra_point
+                elif X_PointMap_For_Posible_Pose == X_Now:
+                    Optimize_Point = Axis_Optimize_Points["Y"][Y_PointMap_For_Posible_Pose]
+                    if Y_PointMap_For_Posible_Pose > Y_Now:
+                        Direction_Point = Axis_Point[1]*Angle_Point[0]
+                    else:
+                        Direction_Point = Axis_Point[1]*Angle_Point[1]
                 else:
-                    PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Penalty_Point + Extra_point
+                    Direction_Point = 0
+                    Optimize_Point = 0
+
+                PointMap_For_Posible_Pose[X_PointMap_For_Posible_Pose][Y_PointMap_For_Posible_Pose] += Position_Point + Direction_Point + Optimize_Point
         return PointMap_For_Posible_Pose
     
-    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose):
+    def __Choose_New_Position_To_Move(self, PointMap_For_Posible_Pose, Now_Position):
         Length_Axis = self.Penalty_Map.Get_Number_X_Axis_In_Map()
         Point_Of_New_Pose = 10000
         for X_Check in range(0,Length_Axis):
@@ -369,29 +619,40 @@ class Controller():
                 if Point_Of_Checking_Pose < Point_Of_New_Pose:
                     New_Pose = (X_Check,Y_Check)
                     Point_Of_New_Pose = Point_Of_Checking_Pose 
-                else:
-                    pass
+                elif Point_Of_Checking_Pose == Point_Of_New_Pose : 
+                    if (abs(X_Check - Now_Position[0]) + abs(Y_Check - Now_Position[1])) < (abs(New_Pose[0] - Now_Position[0]) + abs(New_Pose[1] - Now_Position[1])):
+                        New_Pose = (X_Check,Y_Check)
         return New_Pose
 
-    def __Determine_Possible_NewPosition_To_Move(self):
-        Penalty_Map = self.Penalty_Map.Get_Penalty_Map()
-        Position = self.Robot_Position.Get_Now_Position()
+    def __Determine_Possible_NewPosition_To_Move(self,Position, Penalty_Map):
         PointMap_For_Posible_Pose = self.__Calculate_PointMap_To_Choose_Pose_For_Movement(PenaltyMap=Penalty_Map,Now_Position=Position)
-        New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose)
+        New_Pose = self.__Choose_New_Position_To_Move(PointMap_For_Posible_Pose=PointMap_For_Posible_Pose, Now_Position= Position)
         return New_Pose
     
     def Determine_New_Position_For_Robot(self,Now_Position:tuple, Now_Penalty_Map:dict):
-        Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
-        if Reponse == True:
-            print("Robot has covered full map")
-            if Now_Position != self.Robot_Position.Get_Start_Position():
-                Target_Pose = self.Robot_Position.Get_Start_Position()
+        Valid_Position = False
+        while Valid_Position == False:
+            # print(f"Occupied Position {self.Robot_Position.Get_Occupied_Positions()}")
+            Reponse = self.Check_Is_Cover_Full_Map(Penalty_Map=Now_Penalty_Map)
+            if Reponse == True:
+                print("Robot has covered full map")
+                if Now_Position != self.Robot_Position.Get_Start_Position():
+                    self.Robot_Position.Update_Scope_Position(self.Robot_Position.Get_Start_Position())
+                else:
+                    return self.Robot_Position.Get_Start_Position(),True
             else:
-                return self.Robot_Position.Get_Start_Position(),True
-        else:
-            Target_Pose = self.__Determine_Possible_NewPosition_To_Move()
-        print(f"Target Pose:{Target_Pose}")
-        Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Target_Pose,Penalty_Map=Now_Penalty_Map)
+                Scope_Position = self.Robot_Position.Get_Scope_Position() 
+                if Scope_Position == Now_Position or Scope_Position == ():
+                    self.Robot_Position.Update_Scope_Position(self.__Determine_Possible_NewPosition_To_Move(Position= Now_Position, Penalty_Map=Now_Penalty_Map))
+            Scope_Pose = self.Robot_Position.Get_Scope_Position()
+            print(f"Scope Pose:{Scope_Pose}")
+            Path = self.Path_Planning.Find_Path(Start_Grid=Now_Position,End_Grid=Scope_Pose,Penalty_Map=Now_Penalty_Map)
+            if self.Penalty_Map.Get_Penalty_Point_Of_Position(Path[0]) > 48 and Reponse == False: 
+                self.Robot_Position.Update_Scope_Position(Position = ())
+                self.Robot_Position.Update_Occupied_Position(Scope_Pose)
+                Valid_Position = False
+            else:
+                Valid_Position = True
         return Path[0], False
     
     def Determine_New_Angle_For_Robot(self,Target_Position:tuple, Now_Position:tuple, Now_Angle:int):
@@ -444,35 +705,6 @@ class Controller():
             List_Commands = []
         return List_Commands
     
-    def __Determine_Penalty_Point_Of_Around_Position(self):
-        (X_Now,Y_Now) = self.Robot_Position.Get_Now_Position()
-        Now_Angle = self.Robot_Position.Get_Now_Angle()
-        if Now_Angle == 0:
-            Head_Pose =     (X_Now + 1,Y_Now)
-            Left_Pose =     (X_Now,Y_Now - 1)
-            Back_Pose =     (X_Now - 1,Y_Now)
-            Right_Pose =    (X_Now,Y_Now + 1)
-        elif Now_Angle == 90:
-            Head_Pose =     (X_Now,Y_Now - 1)
-            Left_Pose =     (X_Now + 1,Y_Now)
-            Back_Pose =     (X_Now,Y_Now + 1)
-            Right_Pose =    (X_Now - 1,Y_Now)
-        elif Now_Angle == 180:
-            Head_Pose =     (X_Now - 1,Y_Now)
-            Left_Pose =     (X_Now,Y_Now + 1)
-            Back_Pose =     (X_Now + 1,Y_Now)
-            Right_Pose =    (X_Now,Y_Now - 1)
-        else:
-            Head_Pose =     (X_Now,Y_Now + 1)
-            Left_Pose =     (X_Now - 1,Y_Now)
-            Back_Pose =     (X_Now,Y_Now - 1)
-            Right_Pose =    (X_Now + 1,Y_Now)
-        
-        Head_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Head_Pose)
-        Right_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Right_Pose)
-        Left_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Left_Pose)
-        Back_Penalty = self.Penalty_Map.Get_Penalty_Point_Of_Position(Position=Back_Pose)
-        return Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty
 
     def __Get_Command_For_Control_Robot_Forward(self):
         Target_Position = self.Robot_Position.Get_Target_Position()
@@ -490,36 +722,75 @@ class Controller():
         }
         
         return Command
-
-    def __Determine_Back_Solution(self):
+    
+    def __Get_Commands_For_Control_Robot_Rotate_BackSide(self):
+        (Head_Distance, Right_Distance, Back_Distance, Left_Distance) = self.Robot_Lidar.Get_Distances()
         List_Commands = []
-        Head_Penalty,Back_Penalty,Left_Penalty,Right_Penalty = self.__Determine_Penalty_Point_Of_Around_Position()
-        if Right_Penalty <= 40:
-            List_Commands.append({
-                "Type"  : "Rotate-Right",
-                "Value" : 90
-            })
+
+        if Right_Distance < 0.3 and Left_Distance < 0.3:
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 35
+                "Value" : 40
             })
+        
+        elif Head_Distance < 0.4:
             List_Commands.append({
-                "Type"  : "Rotate-Right",
-                "Value" : 90
+                "Type"  : "Backward",
+                "Value" : 20
             })
-        elif Left_Penalty <= 40:
             List_Commands.append({
                 "Type"  : "Rotate-Left",
                 "Value" : 90
             })
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 35
+                "Value" : 20
             })
             List_Commands.append({
                 "Type"  : "Rotate-Left",
                 "Value" : 90
             })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 20
+            })
+
+        elif Right_Distance > 0.45:
+            List_Commands.append({
+                "Type"  : "Rotate-Right",
+                "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 15
+            })
+            List_Commands.append({
+                "Type"  : "Rotate-Right",
+                "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 15
+            })
+
+        elif Left_Distance > 0.45:
+            List_Commands.append({
+                "Type"  : "Rotate-Left",
+                "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 15
+            })
+            List_Commands.append({
+                "Type"  : "Rotate-Left",
+                "Value" : 90
+            })
+            List_Commands.append({
+                "Type"  : "Backward",
+                "Value" : 15
+            })
+
         else:
             List_Commands.append({
                 "Type"  : "Backward",
@@ -543,13 +814,17 @@ class Controller():
 
         if Target_Angle == Now_Angle:           # In same direction so can move
             if self.Finish_Flag == True:
-                Command["Type"] = "Finish"
+                List_Commands.append({
+                        "Type"  : "Finish",
+                        "Value" : 0
+                    })
             else:
-                Command["Type"] = "Forward"
+                List_Commands.append(self.__Get_Command_For_Control_Robot_Forward())
 
         elif abs(Target_Angle - Now_Angle) == 180:
-            Command["Type"] = "Back_Movement"
-            Command["Value"] = 180
+            List_Commands = self.__Get_Commands_For_Control_Robot_Rotate_BackSide()
+            if List_Commands[0]["Type"] == "Backward" and len(List_Commands) == 1:
+                self.Robot_Position.Update_Target_Angle(Angle=Now_Angle)
 
         else:                                   # Not same direction so must be rotate first
             if Target_Angle == 0:
@@ -557,6 +832,11 @@ class Controller():
             else:
                 pass
 
+            Distances = self.Robot_Lidar.Get_Distances()
+            if Distances[0] < 23:
+                Back_Distance = 20
+            else:
+                Back_Distance = 15
             if (Target_Angle - Now_Angle) > 0:
                 if (Target_Angle - Now_Angle) > 180:
                     Command["Type"] = "Rotate-Left"
@@ -572,24 +852,17 @@ class Controller():
                 else:
                     Command["Type"] = "Rotate-Left"
                     Command["Value"] = -(Target_Angle - Now_Angle)
-        
 
-        if Command["Type"] == "Forward":
-            List_Commands.append(self.__Get_Command_For_Control_Robot_Forward())
-        
-        elif Command["Type"] == "Back_Movement":
-            List_Commands = self.__Determine_Back_Solution()
-
-        else:
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : Back_Distance
             })
             List_Commands.append(Command)
             List_Commands.append({
                 "Type"  : "Backward",
-                "Value" : 20
+                "Value" : Back_Distance
             })
+        
         return List_Commands
     
     def Get_List_Command_Robot(self):
@@ -602,7 +875,8 @@ class Controller():
             New_Angle = self.Determine_New_Angle_For_Robot(Target_Position=New_Position,Now_Position=Now_Position,Now_Angle=Now_Angle)
         else:
             New_Angle = 0
-            self.Finish_Flag = True
+            if Now_Angle == 0:
+                self.Finish_Flag = True
 
         self.Robot_Position.Update_Target_Position(New_Position)
         self.Robot_Position.Update_Target_Angle(New_Angle)
@@ -616,45 +890,108 @@ class Main():
     def __init__(self) -> None:
         self.Command_Message = Command()
         self.Publisher = rospy.Publisher("Commander",Command,queue_size=50)
-        self.Algorithm_Controller = Controller(Penalty_Map=Penalty_Map(),
-                                        Robot_Position=Position(),
+        self.Algorithm_Controller = Controller(Penalty_Map=Penalty_Map(),Robot_Lidar= Lidar(),Robot_Position=Position(),
                                         Path_Planning=Dijkstra(Number_X_Axis=Penalty_Map().Get_Number_X_Axis_In_Map(),Number_Y_Axis=Penalty_Map().Get_Number_X_Axis_In_Map()))
 
-        self.List_Command = []
+        self.List_Commands = []
         self.Flag_Map = False
         self.Flag_Position = False
+        self.Is_Movement = False
+
+    def __Update_Position(self,Type:str):
+        if Type == "Passed":
+            Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
+            self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Now_Position)
+            Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
+            self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions)
+        elif Type == "Occupied":
+            Occupied_Positions = self.Algorithm_Controller.Robot_Position.Get_Occupied_Positions()
+            self.Algorithm_Controller.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
+        else:
+            pass
 
     def __On_Task_Is_Done(self):
-        if len(self.List_Command) == 1:
+        self.Is_Movement = False
+        time.sleep(0.2)
+        if len(self.List_Commands) > 0:
+            if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
+                time.sleep(0.5)
+        else:
+            pass
+
+        if len(self.List_Commands) == 1:
             self.Algorithm_Controller.Robot_Position.Update_Now_Angle(Angle=self.Algorithm_Controller.Robot_Position.Get_Target_Angle())
         else:
             pass
-        del self.List_Command[0]
+
+        if len(self.List_Commands) > 0:
+            del self.List_Commands[0]
+        else:
+            pass
 
     def __Command_Robot(self):
-        if len(self.List_Command) ==0:
-            self.List_Command = self.Algorithm_Controller.Fix_Error_Degreed()
-            if len(self.List_Command) == 0:
-                time.sleep(0.5)
-                self.List_Command = self.Algorithm_Controller.Get_List_Command_Robot()  
+        if len(self.List_Commands) ==0:
+            self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
+            if len(self.List_Commands) == 0:
+                time.sleep(0.2)
+                self.__Update_Position(Type="Passed")
+                self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
                 pass
         else: 
             pass
-        if self.List_Command[0]["Type"] == "Finish":
+        if self.List_Commands[0]["Type"] == "Finish":
             print("Finish")
         else:
-            self.__Send_Command_To_Robot(Command = self.List_Command[0])
+            self.__Send_Command_To_Robot(Command = self.List_Commands[0])
 
     def __Send_Command_To_Robot(self, Command):
+        if "Rotate" in Command["Type"] or Command["Type"] == "Forward":
+            self.Is_Movement = True 
         self.Command_Message.type = Command["Type"]
         self.Command_Message.value = Command["Value"]
         self.Publisher.publish(self.Command_Message)
 
+    def __Robot_Backward(self,Distance):
+        self.Command_Message.type = "Backward"
+        self.Command_Message.value = Distance
+        self.Publisher.publish(self.Command_Message)
+
+    def __Stop_Robot(self):
+        self.Command_Message.type = "Stop"
+        self.Command_Message.value = 0
+        self.Publisher.publish(self.Command_Message)
+        print("Stop Robot Urgency")
+    
+    def Object_Detected(self,Source = "Lidar"):
+        self.Is_Movement = False
+        self.Algorithm_Controller.Robot_Lidar.Valid_Value = False
+        del self.List_Commands[:]
+        self.__Stop_Robot()
+        time.sleep(2)
+        Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
+        if Distances[0] < 0.35 or Source == "Ultrasonic":
+            Target_Position = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
+            Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
+            if Now_Position != Target_Position:
+                Occupied_Postion = Target_Position
+            else:
+                Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Ahead_Position()
+                self.__Update_Position(Type="Passed")
+            print(f"Occupied Position : {Occupied_Postion}")
+            self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
+            self.__Update_Position(Type="Occupied")
+        self.__Robot_Backward(Distance = 20)
+        time.sleep(1)
+
+
     def Map_Callback_Handler(self,data):
         self.Flag_Map = True
+        Passed_Positions = self.Algorithm_Controller.Robot_Position.Get_Passed_Positions()
+        Occupied_Positions = self.Algorithm_Controller.Robot_Position.Get_Occupied_Positions()
         self.Algorithm_Controller.Penalty_Map.Convert_Occupancy_Map_To_Penalty_Map(data)
-        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Position(Passed_Positions=self.Algorithm_Controller.Robot_Position.Get_Passed_Positions())
+        self.Algorithm_Controller.Penalty_Map.Calcutate_Penalty_Map_With_Passed_Positions(Passed_Positions=Passed_Positions)
+        self.Algorithm_Controller.Penalty_Map.Calculate_Penalty_Map_With_With_Occupied_Positions(Occupied_Positions)
 
     def Position_Callback_Handler(self,msg:PoseStamped):
         self.Flag_Position = True
@@ -670,14 +1007,24 @@ class Main():
             self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Pose(SLAM_Pose=(SLAM_Position_X,SLAM_Position_Y))
         self.Algorithm_Controller.Robot_Position.Update_Now_Position(Position=Now_Position)
         self.Algorithm_Controller.Robot_Position.Update_SLAM_Now_Angle(Degrees_Value=SLAM_Now_Angle)
-        self.Algorithm_Controller.Robot_Position.Update_Passed_Position(Position=Now_Position)
 
+    def Lidar_Callback_Handler(self,msg:LaserScan):
+        self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
+        if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
+            Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
+            if Distances[0] <= 0.28:
+                self.Object_Detected(Source= "Lidar")
+
+
+        
     def STM32_Message_Callback_Handler(self,Message):
         if Message.data == "Start":
             while (self.Flag_Map == False or self.Flag_Position == False):
                 pass                                                ## Waiting for setup finish
         elif Message.data == "Movement_Okay" or Message.data == "Rotation_Okay":
             self.__On_Task_Is_Done()
+        elif Message.data == "Object_Detected":
+            self.Object_Detected(Source = "Ultrasonic")
         else:   
             pass # Reserve 
 
@@ -686,6 +1033,7 @@ class Main():
     def Node_subscribe(self):
         rospy.init_node('flood_fill',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
+        rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
         rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)
         rospy.Subscriber("STM32_Message",String, self.STM32_Message_Callback_Handler)
         print("Controller Started")
