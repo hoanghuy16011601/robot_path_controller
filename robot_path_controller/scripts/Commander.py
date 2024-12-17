@@ -931,6 +931,7 @@ class Main():
             pass
 
     def __Command_Robot(self):
+        rospy.sleep(0.3)
         if len(self.List_Commands) ==0:
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
