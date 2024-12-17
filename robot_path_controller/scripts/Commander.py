@@ -170,7 +170,7 @@ class Lidar():
             if msg.ranges[Index] < Back_Distance:
                 Back_Distance = msg.ranges[Index]
         
-        if abs(Head_Distance - self.Last_Head_Distance) <= 0.1:
+        if abs(Head_Distance - self.Last_Head_Distance) <= 0.15:
             self.Head_Count_Check += 1
             if self.Head_Count_Check == 2:
                 self.Valid_Value = True
@@ -180,7 +180,7 @@ class Lidar():
             self.Head_Count_Check = 0
         self.Last_Head_Distance = Head_Distance
 
-        if abs(Right_Distance - self.Last_Right_Distance) <= 0.1:
+        if abs(Right_Distance - self.Last_Right_Distance) <= 0.15:
             self.Right_Count_Check += 1
             if self.Right_Count_Check == 2:
                 self.Right_Distance = Right_Distance
@@ -189,7 +189,7 @@ class Lidar():
             self.Right_Count_Check = 0
         self.Right_Distance = Right_Distance
 
-        if abs(Back_Distance - self.Last_Back_Distance) <= 0.1:
+        if abs(Back_Distance - self.Last_Back_Distance) <= 0.15:
             self.Back_Count_Check += 1
             if self.Back_Count_Check == 2:
                 self.Back_Distance = Back_Distance
@@ -198,7 +198,7 @@ class Lidar():
             self.Back_Count_Check = 0
         self.Back_Distance = Back_Distance
 
-        if abs(Left_Distance - self.Last_Left_Distance) <= 0.1:
+        if abs(Left_Distance - self.Last_Left_Distance) <= 0.15:
             self.Left_Count_Check += 1
             if self.Left_Count_Check == 2:
                 self.Left_Distance = Left_Distance
@@ -971,7 +971,7 @@ class Main():
         self.__Stop_Robot()
         time.sleep(2)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
-        if Distances[0] < 0.35 or Source == "Ultrasonic":
+        if Distances[0] < 0.25 or Source == "Ultrasonic":
             Target_Position = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
             Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
             if Now_Position != Target_Position:
@@ -1013,7 +1013,7 @@ class Main():
         self.Algorithm_Controller.Robot_Lidar.Convert_To_Sides_Distance(msg=msg)
         if self.Is_Movement == True and self.Algorithm_Controller.Robot_Lidar.Valid_Value == True:
             Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()       #=>(Head , Right , Back, Left)
-            if Distances[0] <= 0.28:
+            if Distances[0] <= 0.25:
                 self.Object_Detected(Source= "Lidar")
 
 
