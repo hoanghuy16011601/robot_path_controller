@@ -162,7 +162,7 @@ class Main():
         self.__Command_Robot()
         
     def Node_subscribe(self):
-        rospy.init_node('flood_fill',anonymous = True)
+        rospy.init_node('main',anonymous = True)
         rospy.Subscriber("map",OccupancyGrid, self.Map_Callback_Handler)
         rospy.Subscriber('scan', LaserScan, self.Lidar_Callback_Handler)
         rospy.Subscriber("slam_out_pose",PoseStamped, self.Position_Callback_Handler)

@@ -111,7 +111,7 @@ catkin_package(
 )
 
 catkin_install_python(PROGRAMS 
-  scripts/Commander.py 
+  scripts/main.py 
   scripts/odometry_broadcaster.py 
   scripts/Communication.py 
   scripts/Lidar.py
