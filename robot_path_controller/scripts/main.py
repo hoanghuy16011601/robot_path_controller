@@ -64,6 +64,7 @@ class Main():
         if len(self.List_Commands) ==0:
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
+                rospy.sleep(0.2)
                 self.__Update_Position(Type="Passed")
                 self.List_Commands = self.Algorithm_Controller.Get_List_Command_Robot()  
             else:
