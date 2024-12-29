@@ -46,7 +46,7 @@ class Main():
         self.Is_Movement = False
         if len(self.List_Commands) > 0:
             if "Rotate" in self.List_Commands[0]["Type"] and self.List_Commands[0]["Value"] > 30:
-                time.sleep(0.5)
+                rospy.sleep(0.5)
         else:
             pass
 
@@ -61,7 +61,6 @@ class Main():
             pass
 
     def __Command_Robot(self):
-        rospy.sleep(0.3)
         if len(self.List_Commands) ==0:
             self.List_Commands = self.Algorithm_Controller.Fix_Error_Degreed()
             if len(self.List_Commands) == 0:
