@@ -93,24 +93,17 @@ class Main():
         self.Command_Message.value = 0
         self.Publisher.publish(self.Command_Message)
         print("Stop Robot Urgency")
-    
+
     def Object_Detected(self,Source = "Lidar"):
         self.Is_Movement = False
         self.Algorithm_Controller.Robot_Lidar.Valid_Value = False
         del self.List_Commands[:]
         self.__Stop_Robot()
-        time.sleep(2)
+        rospy.sleep(2)
         Distances = self.Algorithm_Controller.Robot_Lidar.Get_Distances()
         if Distances[0] < 0.25 or Source == "Ultrasonic":
-            Target_Position = self.Algorithm_Controller.Robot_Position.Get_Target_Position()
             Now_Position = self.Algorithm_Controller.Robot_Position.Get_Now_Position()
-            if Now_Position != Target_Position:
-                Occupied_Postion = Target_Position
-            else:
-                Occupied_Postion = self.Algorithm_Controller.Robot_Position.Get_Ahead_Position()
-                self.__Update_Position(Type="Passed")
-            print(f"Occupied Position : {Occupied_Postion}")
-            self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Occupied_Postion)
+            self.Algorithm_Controller.Robot_Position.Update_Occupied_Position(Position=Now_Position)
             self.__Update_Position(Type="Occupied")
         self.__Robot_Backward(Distance = 20)
         time.sleep(1)

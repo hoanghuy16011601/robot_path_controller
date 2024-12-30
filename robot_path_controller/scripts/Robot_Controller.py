@@ -386,11 +386,7 @@ class Controller():
             else:
                 pass
 
-            Distances = self.Robot_Lidar.Get_Distances()
-            if Distances[0] < 23:
-                Back_Distance = 10
-            else:
-                Back_Distance = 10
+            Back_Distance = 15
             if (Target_Angle - Now_Angle) > 0:
                 if (Target_Angle - Now_Angle) > 180:
                     Command["Type"] = "Rotate-Left"

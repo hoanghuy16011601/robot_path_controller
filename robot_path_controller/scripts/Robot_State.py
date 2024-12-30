@@ -158,13 +158,13 @@ class Position():
             pass
 
     def Get_Ahead_Position(self):
-        if self.Now_Angle == 0:
+        if self.SLAM_Now_Angle < 45 or self.SLAM_Now_Angle > 315:
             Direction_Bias = (1,0)
-        elif self.Now_Angle == 90:
+        elif self.SLAM_Now_Angle < 135:
             Direction_Bias = (0,-1)
-        elif self.Now_Angle == 180:
+        elif self.Now_Angle < 225:
             Direction_Bias = (-1,0)
-        elif self.Now_Angle == 270:
+        else:
             Direction_Bias = (0,1)
         
         X = self.Now_Position[0] + Direction_Bias[0]
